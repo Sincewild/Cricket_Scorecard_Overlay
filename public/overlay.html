@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cricket Live Overlay</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: transparent;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  /* ── SCOREBAR ── */
+  #scorebar {
+    position: fixed;
+    bottom: 40px;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: stretch;
+    height: 68px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    filter: drop-shadow(0 4px 24px rgba(0,0,0,0.6));
+  }
+
+  /* LIVE badge */
+  #live-badge {
+    background: #e8003d;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-width: 46px;
+    flex-shrink: 0;
+  }
+
+  #live-badge .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #fff;
+    animation: blink 1.2s infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.15; }
+  }
+
+  /* Team 1 */
+  #team1-block {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 0 6px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 7px;
+    min-width: 178px;
+    border-right: 3px solid #e8003d;
+  }
+
+  .team-logo {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: none;
+    border: 1px solid rgba(255,255,255,0.35);
+    background: rgba(255,255,255,0.07);
+    flex-shrink: 0;
+  }
+
+  .team-meta {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+  }
+
+  #team1-name {
+    font-size: 10px;
+    color: #aab0c0;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin-bottom: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  #team1-score {
+    font-size: 19px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+  }
+
+  #team1-overs {
+    font-size: 11px;
+    color: #7eb8f7;
+    font-weight: 500;
+    margin-top: 1px;
+  }
+
+  /* VS block */
+  #vs-block {
+    background: #e8003d;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* Team 2 */
+  #team2-block {
+    background: #0f3460;
+    color: #fff;
+    padding: 0 6px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 7px;
+    min-width: 178px;
+    border-left: 3px solid #e8003d;
+  }
+
+  #team2-name {
+    font-size: 10px;
+    color: #aab0c0;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin-bottom: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  #team2-score {
+    font-size: 19px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+  }
+
+  #team2-overs {
+    font-size: 11px;
+    color: #7eb8f7;
+    font-weight: 500;
+    margin-top: 1px;
+  }
+
+  /* Match info — inning-aware panel */
+  #match-info {
+    background: #16213e;
+    color: #cdd3e0;
+    padding: 0 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 0.45;
+    border-left: 1px solid rgba(255,255,255,0.08);
+    min-width: 120px;
+    overflow: hidden;
+  }
+
+  /* 1st inning / completed modes */
+  #info-mode-simple {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  #info-label {
+    font-size: 7px;
+    color: #667788;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  #info-crr-simple {
+    font-size: 10px;
+    color: #f0c040;
+    font-weight: 700;
+  }
+  #info-result-text {
+    font-size: 11px;
+    color: #f0c040;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    white-space: nowrap;
+    min-width: 0;
+    position: relative;
+  }
+  #info-result-text.scrolling {
+    mask-image: linear-gradient(to right, transparent 0, black 10px, black calc(100% - 10px), transparent 100%);
+  }
+  #info-result-track {
+    display: inline-flex;
+    align-items: center;
+    gap: 36px;
+    white-space: nowrap;
+    will-change: transform;
+    backface-visibility: hidden;
+    transform: translate3d(0, 0, 0);
+  }
+  #info-result-text.scrolling #info-result-track {
+    animation: marquee 18s linear infinite;
+  }
+  #info-result-track .result-copy {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  @keyframes marquee {
+    from { transform: translate3d(0, 0, 0); }
+    to { transform: translate3d(-50%, 0, 0); }
+  }
+
+  /* 2nd inning chasing mode */
+  #info-mode-chase {
+    display: none;
+    flex-direction: column;
+    gap: 1px;
+  }
+  #info-need {
+    font-size: 11px;
+    font-weight: 800;
+    color: #fff;
+    white-space: nowrap;
+  }
+  #info-need .need-runs  { color: #ff7755; }
+  #info-need .need-balls { color: #aab0c0; }
+  #info-rr {
+    font-size: 9px;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  .info-rr-label { color: #667788; margin-right: 3px; }
+  .info-crr-val  { color: #f0c040; font-weight: 700; }
+  .info-rrr-val  { color: #ff7755; font-weight: 700; }
+
+  /* Batsmen */
+  #batsmen-strip {
+    background: #0d1b2a;
+    color: #fff;
+    padding: 0 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    flex: 0.75;
+    min-width: 280px;
+    border-left: 1px solid rgba(255,255,255,0.08);
+  }
+
+  #batsmen-label {
+    font-size: 9px;
+    color: #667788;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+  }
+
+  .batsman-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+  }
+
+  .batsman-name {
+    color: #cdd3e0;
+    font-weight: 600;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .batsman-name.on-strike::after {
+    content: ' ✦';
+    color: #f0c040;
+    font-size: 9px;
+  }
+
+  .batsman-stat {
+    color: #7eb8f7;
+    font-weight: 700;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .batsman-sr {
+    color: #667788;
+    font-size: 10px;
+    margin-left: 4px;
+  }
+
+  /* Bowler */
+  #bowler-strip {
+    background: #0d1b2a;
+    color: #fff;
+    padding: 0 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 0.6;
+    min-width: 240px;
+    border-left: 1px solid rgba(255,255,255,0.08);
+  }
+
+  #bowler-label {
+    font-size: 9px;
+    color: #667788;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+  }
+
+  #bowler-name {
+    font-size: 12px;
+    color: #cdd3e0;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 140px;
+  }
+
+  #bowler-stat {
+    font-size: 11px;
+    color: #f9a64a;
+    font-weight: 600;
+    margin-top: 2px;
+  }
+
+  /* This over balls */
+  #lastball-strip {
+    background: #0d1b2a;
+    padding: 0 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-width: 120px;
+    border-left: 1px solid rgba(255,255,255,0.08);
+    flex-shrink: 0;
+  }
+
+  #lastball-label {
+    font-size: 9px;
+    color: #667788;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+  }
+
+  #balls-row {
+    display: flex;
+    gap: 4px;
+  }
+
+  .ball {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    font-size: 9px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1a2a3a;
+    color: #667788;
+  }
+
+  .ball.four    { background: #1a5c30; color: #5dff96; }
+  .ball.six     { background: #6b1a1a; color: #ff9999; }
+  .ball.wicket  { background: #e8003d; color: #fff; }
+  .ball.wide    { background: #3a3a1a; color: #ffcc44; }
+  .ball.noball  { background: #3a2a1a; color: #ffaa44; }
+  .ball.dot     { background: #111e2a; color: #445566; }
+  .ball.run     { background: #1a2a3a; color: #cdd3e0; }
+
+  /* Refresh indicator */
+  #refresh-indicator {
+    position: fixed;
+    bottom: 114px;
+    right: 14px;
+    font-size: 10px;
+    color: rgba(255,255,255,0.25);
+    font-family: monospace;
+  }
+
+  /* Error state */
+  #error-banner {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    background: rgba(232,0,61,0.85);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 6px 16px;
+    text-align: center;
+  }
+
+  @media (max-width: 1360px) {
+    #lastball-strip {
+      display: none;
+    }
+  }
+
+  @media (max-width: 1180px) {
+    #match-info {
+      min-width: 90px;
+      padding: 0 6px;
+      flex: 0.35;
+    }
+
+    #team1-block,
+    #team2-block {
+      min-width: 156px;
+    }
+
+    #batsmen-strip {
+      min-width: 240px;
+      flex: 0.7;
+    }
+
+    #bowler-strip {
+      min-width: 200px;
+      flex: 0.55;
+    }
+  }
+
+  /* Result banner for finished matches */
+  #result-banner {
+    display: none;
+    position: fixed;
+    left: 50%;
+    top: 18px;
+    transform: translateX(-50%);
+    z-index: 30;
+    padding: 12px 22px;
+    border-radius: 999px;
+    color: #fff9dc;
+    background: linear-gradient(135deg, rgba(232,0,61,0.95), rgba(255,122,0,0.92));
+    border: 1px solid rgba(255,255,255,0.14);
+    box-shadow: 0 10px 34px rgba(0,0,0,0.35);
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  #result-banner.show {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: result-pop 420ms ease-out;
+  }
+
+  .result-banner-text {
+    position: relative;
+    z-index: 2;
+  }
+
+  .result-spark {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #fff3b0;
+    box-shadow:
+      18px -18px 0 0 rgba(255,255,255,0.95),
+      -18px -18px 0 0 rgba(255,216,79,0.95),
+      18px 18px 0 0 rgba(255,122,0,0.95),
+      -18px 18px 0 0 rgba(255,255,255,0.95);
+    animation: spark-bounce 1s ease-in-out infinite alternate;
+  }
+
+  .result-spark.right {
+    animation-delay: 140ms;
+  }
+
+  @keyframes result-pop {
+    from { transform: translateX(-50%) scale(0.9); opacity: 0; }
+    to { transform: translateX(-50%) scale(1); opacity: 1; }
+  }
+
+  @keyframes spark-bounce {
+    from { transform: scale(0.95) rotate(0deg); opacity: 0.7; }
+    to { transform: scale(1.15) rotate(18deg); opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+<div id="error-banner"></div>
+<div id="result-banner">
+  <span class="result-spark"></span>
+  <span class="result-banner-text" id="result-banner-text">Jersey Lions won by 62 Runs</span>
+  <span class="result-spark right"></span>
+</div>
+
+<div id="scorebar">
+  <div id="live-badge">
+    <span class="dot"></span>LIVE
+  </div>
+
+  <div id="team1-block">
+    <img id="team1-logo" class="team-logo" alt="Team 1 logo">
+    <div class="team-meta">
+      <div id="team1-name">Team 1</div>
+      <div id="team1-score">— / —</div>
+      <div id="team1-overs">0.0 overs</div>
+    </div>
+  </div>
+
+  <div id="vs-block">VS</div>
+
+  <div id="team2-block">
+    <img id="team2-logo" class="team-logo" alt="Team 2 logo">
+    <div class="team-meta">
+      <div id="team2-name">Team 2</div>
+      <div id="team2-score">Yet to bat</div>
+      <div id="team2-overs"></div>
+    </div>
+  </div>
+
+  <div id="match-info">
+    <!-- Simple mode: 1st innings or match over -->
+    <div id="info-mode-simple">
+      <div id="info-label">1st Innings</div>
+      <div id="info-crr-simple">CRR —</div>
+      <div id="info-result-text" style="display:none">
+        <span id="info-result-track">
+          <span class="result-copy" id="info-result-copy-1">—</span>
+          <span class="result-copy" id="info-result-copy-2">—</span>
+        </span>
+      </div>
+    </div>
+    <!-- Chase mode: 2nd innings live -->
+    <div id="info-mode-chase">
+      <div id="info-need">Need <span class="need-runs" id="info-runs">—</span> off <span class="need-balls" id="info-balls">—</span> balls</div>
+      <div id="info-rr">
+        <span><span class="info-rr-label">CRR</span><span class="info-crr-val" id="info-crr">—</span></span>
+        <span><span class="info-rr-label">RRR</span><span class="info-rrr-val" id="info-rrr">—</span></span>
+      </div>
+    </div>
+  </div>
+
+  <div id="batsmen-strip">
+    <div id="batsmen-label">Batting Now</div>
+    <div class="batsman-row" id="bat1-row">
+      <span class="batsman-name" id="bat1-name">—</span>
+      <span class="batsman-stat" id="bat1-stat">—</span>
+    </div>
+    <div class="batsman-row" id="bat2-row">
+      <span class="batsman-name" id="bat2-name">—</span>
+      <span class="batsman-stat" id="bat2-stat">—</span>
+    </div>
+  </div>
+
+  <div id="bowler-strip">
+    <div id="bowler-label">Bowling Now</div>
+    <div id="bowler-name">—</div>
+    <div id="bowler-stat">— — —</div>
+  </div>
+
+  <div id="lastball-strip">
+    <div id="lastball-label">This Over</div>
+    <div id="balls-row">
+      <div class="ball dot">·</div>
+      <div class="ball dot">·</div>
+      <div class="ball dot">·</div>
+      <div class="ball dot">·</div>
+      <div class="ball dot">·</div>
+      <div class="ball dot">·</div>
+    </div>
+  </div>
+
+</div>
+
+<div id="refresh-indicator">Next update in <span id="countdown">30</span>s</div>
+
+<script>
+  // ── Config: point to your Render server ──
+  // Change this to your Render URL after deployment
+  const SERVER_URL = window.location.origin;
+  const REFRESH_EVERY = 20;
+  let hasReceivedData = false;
+  const params = new URLSearchParams(window.location.search);
+  const DEFAULT_TEAM_LOGO = `${window.location.origin}/default-team.svg`;
+  const FALLBACK_TEAM1_LOGO = params.get('team1Logo') || params.get('logo1') || '';
+  const FALLBACK_TEAM2_LOGO = params.get('team2Logo') || params.get('logo2') || '';
+
+  function safeLogoUrl(value) {
+    if (!value || typeof value !== 'string') return '';
+
+    try {
+      const parsed = new URL(value, window.location.origin);
+      if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+        return parsed.toString();
+      }
+    } catch (e) {
+      return '';
+    }
+
+    return '';
+  }
+
+  function setTeamLogo(imgId, logoUrl) {
+    const img = document.getElementById(imgId);
+    const safeUrl = safeLogoUrl(logoUrl) || DEFAULT_TEAM_LOGO;
+
+    img.onerror = () => {
+      // Fallback to bundled default logo for missing/broken team assets.
+      if (img.src !== DEFAULT_TEAM_LOGO) {
+        img.src = DEFAULT_TEAM_LOGO;
+        img.style.display = 'block';
+        return;
+      }
+      img.style.display = 'none';
+      img.removeAttribute('src');
+    };
+    img.onload = () => {
+      img.style.display = 'block';
+    };
+    img.src = safeUrl;
+  }
+
+  function renderBall(val) {
+    if (!val) return '<div class="ball dot">·</div>';
+    const v = String(val).toUpperCase().trim();
+    let cls = 'run', label = v;
+    if (v === '0' || v === '.')  { cls = 'dot';    label = '·'; }
+    else if (v === '4')          { cls = 'four';   label = '4'; }
+    else if (v === '6')          { cls = 'six';    label = '6'; }
+    else if (v === 'W')          { cls = 'wicket'; label = 'W'; }
+    else if (v === 'WD' || v === 'WB' || v === 'WIDE') { cls = 'wide'; label = 'wd'; }
+    else if (v === 'NB')         { cls = 'noball'; label = 'nb'; }
+    return `<div class="ball ${cls}">${label}</div>`;
+  }
+
+  function updateUI(data) {
+    // Teams
+    document.getElementById('team1-name').textContent = data.team1 || 'Team 1';
+    document.getElementById('team2-name').textContent = data.team2 || 'Team 2';
+
+    // Team logos (API value first, then URL fallback)
+    setTeamLogo('team1-logo', data.team1Logo || FALLBACK_TEAM1_LOGO);
+    setTeamLogo('team2-logo', data.team2Logo || FALLBACK_TEAM2_LOGO);
+
+    // Score 1
+    if (data.score1 !== null && data.score1 !== undefined) {
+      document.getElementById('team1-score').textContent = `${data.score1}/${data.wkts1}`;
+      document.getElementById('team1-overs').textContent = `${data.overs1} overs`;
+    }
+
+    // Score 2
+    if (data.score2 !== null && data.score2 !== undefined) {
+      document.getElementById('team2-score').textContent = `${data.score2}/${data.wkts2}`;
+      document.getElementById('team2-overs').textContent = `${data.overs2} overs`;
+    } else {
+      document.getElementById('team2-score').textContent = 'Yet to bat';
+      document.getElementById('team2-overs').textContent = '';
+    }
+
+    // ── Inning-aware match-info panel ─────────────────────────────────────
+    const isMatchOver = data.status && /\bwon by\b/i.test(data.status);
+    const isChasing   = !isMatchOver && data.rrr !== null && data.rrr !== undefined;
+    const liveBadge   = document.getElementById('live-badge');
+    const resultBanner = document.getElementById('result-banner');
+    const resultBannerText = document.getElementById('result-banner-text');
+
+    if (liveBadge) {
+      liveBadge.style.display = isMatchOver ? 'none' : 'flex';
+    }
+    if (resultBanner) {
+      if (isMatchOver) {
+        resultBannerText.textContent = data.status;
+        resultBanner.classList.add('show');
+      } else {
+        resultBanner.classList.remove('show');
+        resultBannerText.textContent = '';
+      }
+    }
+
+    const simpleMode = document.getElementById('info-mode-simple');
+    const chaseMode  = document.getElementById('info-mode-chase');
+
+    if (isChasing) {
+      simpleMode.style.display = 'none';
+      chaseMode.style.display  = 'flex';
+      document.getElementById('info-runs').textContent  = data.runsNeeded || '—';
+      document.getElementById('info-balls').textContent = data.ballsLeft   || '—';
+      document.getElementById('info-crr').textContent   = data.crr ? parseFloat(data.crr).toFixed(2) : '—';
+      document.getElementById('info-rrr').textContent   = data.rrr ? parseFloat(data.rrr).toFixed(2) : '—';
+    } else {
+      simpleMode.style.display = 'flex';
+      chaseMode.style.display  = 'none';
+      const label      = document.getElementById('info-label');
+      const crrSimple  = document.getElementById('info-crr-simple');
+      const resultText = document.getElementById('info-result-text');
+      const resultCopy1 = document.getElementById('info-result-copy-1');
+      const resultCopy2 = document.getElementById('info-result-copy-2');
+      const resultTrack = document.getElementById('info-result-track');
+      if (isMatchOver) {
+        label.style.display      = 'none';
+        crrSimple.style.display  = 'none';
+        resultText.style.display = 'block';
+        resultCopy1.textContent  = data.status;
+        resultCopy2.textContent  = data.status;
+        resultText.classList.remove('scrolling');
+        if (resultTrack) {
+          requestAnimationFrame(() => {
+            if (resultTrack.scrollWidth > resultText.clientWidth + 8) {
+              resultText.classList.add('scrolling');
+            }
+          });
+        }
+      } else {
+        label.style.display      = 'block';
+        label.textContent        = '1st Innings';
+        resultText.style.display = 'none';
+        resultText.classList.remove('scrolling');
+        crrSimple.style.display  = 'block';
+        crrSimple.textContent    = data.crr ? `CRR  ${parseFloat(data.crr).toFixed(2)}` : 'Live';
+      }
+    }
+
+    // Batsmen
+    if (data.bat1) {
+      document.getElementById('bat1-name').classList.add('on-strike');
+      document.getElementById('bat1-name').textContent = data.bat1;
+      const sr1 = data.bat1sr ? ` · SR ${data.bat1sr}` : '';
+      document.getElementById('bat1-stat').textContent = `${data.bat1r} (${data.bat1b})${sr1}`;
+    } else {
+      document.getElementById('bat1-name').classList.remove('on-strike');
+      document.getElementById('bat1-name').textContent = 'No batter data';
+      document.getElementById('bat1-stat').textContent = '—';
+    }
+    if (data.bat2) {
+      document.getElementById('bat2-row').style.display = 'flex';
+      document.getElementById('bat2-name').textContent = data.bat2;
+      const sr2 = data.bat2sr ? ` · SR ${data.bat2sr}` : '';
+      document.getElementById('bat2-stat').textContent = `${data.bat2r} (${data.bat2b})${sr2}`;
+    } else {
+      document.getElementById('bat2-row').style.display = 'none';
+    }
+
+    // Bowler
+    if (data.bowler) {
+      document.getElementById('bowler-name').textContent = data.bowler;
+      const eco = data.bowlerEco ? ` · Eco ${data.bowlerEco}` : '';
+      document.getElementById('bowler-stat').textContent =
+        `${data.bowlerO || '—'} ov  ${data.bowlerW || 0}-${data.bowlerR || 0}${eco}`;
+    } else {
+      document.getElementById('bowler-name').textContent = 'No bowler data';
+      document.getElementById('bowler-stat').textContent = '—';
+    }
+
+    // Track that data arrived (for offline detection)
+    if (data.lastUpdated) hasReceivedData = true;
+
+    // This over
+    if (data.thisOver && data.thisOver.length > 0) {
+      // Pad to 6 balls
+      const balls = [...data.thisOver];
+      while (balls.length < 6) balls.push('.');
+      document.getElementById('balls-row').innerHTML = balls.slice(0,6).map(renderBall).join('');
+    }
+
+    // Error
+    const errBanner = document.getElementById('error-banner');
+    if (data.error) {
+      errBanner.style.display = 'block';
+      errBanner.textContent = `⚠ ${data.error}`;
+    } else {
+      errBanner.style.display = 'none';
+    }
+  }
+
+  async function fetchScore() {
+    try {
+      const resp = await fetch(`${SERVER_URL}/score`, { cache: 'no-store' });
+      if (!resp.ok) throw new Error(`Server error ${resp.status}`);
+      const data = await resp.json();
+      updateUI(data);
+    } catch (e) {
+      console.warn('Fetch error:', e.message);
+      const label     = document.getElementById('info-label');
+      const crrSimple = document.getElementById('info-crr-simple');
+      document.getElementById('info-mode-simple').style.display = 'flex';
+      document.getElementById('info-mode-chase').style.display  = 'none';
+      document.getElementById('info-result-text').style.display = 'none';
+      document.getElementById('info-result-text').classList.remove('scrolling');
+      if (label)     label.textContent    = hasReceivedData ? 'Connection Lost' : 'Server Offline';
+      if (crrSimple) crrSimple.textContent = hasReceivedData ? 'Reconnecting...' : 'Start server and set match URL';
+    }
+  }
+
+  // Countdown timer
+  let countdown = REFRESH_EVERY;
+
+  // Show static/fallback logos immediately even before live score arrives.
+  setTeamLogo('team1-logo', FALLBACK_TEAM1_LOGO);
+  setTeamLogo('team2-logo', FALLBACK_TEAM2_LOGO);
+
+  setInterval(() => {
+    countdown--;
+    document.getElementById('countdown').textContent = countdown;
+    if (countdown <= 0) {
+      countdown = REFRESH_EVERY;
+      fetchScore();
+    }
+  }, 1000);
+
+  // Initial fetch
+  fetchScore();
+</script>
+</body>
+</html>

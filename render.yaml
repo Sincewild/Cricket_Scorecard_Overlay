@@ -1,0 +1,2 @@
+buildCommand: npm install && npx playwright install chromium --with-deps
+startCommand: npm start

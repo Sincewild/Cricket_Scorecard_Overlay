@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" role="img" aria-label="Default team logo">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2b3a55"/>
+      <stop offset="100%" stop-color="#16213e"/>
+    </linearGradient>
+  </defs>
+  <circle cx="48" cy="48" r="46" fill="url(#bg)" stroke="#d9e2f2" stroke-width="2"/>
+  <path d="M48 22c8 0 14 6 14 14v3c0 7 6 12 13 12h1v6h-1c-6 0-12 3-12 8v2H33v-2c0-5-6-8-12-8h-1v-6h1c7 0 13-5 13-12v-3c0-8 6-14 14-14z" fill="#f0c040"/>
+  <text x="48" y="77" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="11" font-weight="700" fill="#e7edf8">TEAM</text>
+</svg>
