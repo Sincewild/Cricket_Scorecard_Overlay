@@ -102,7 +102,7 @@ http://localhost:3000/
 
 Use these commands (already reflected in `render.yaml`):
 
-- Build command: `npm install && npx playwright install chromium --with-deps`
+- Build command: `npm install && npx playwright install chromium`
 - Start command: `npm start`
 
 After deployment:
