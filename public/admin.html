@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cricket Overlay — Match Control</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0d1b2a;
+    color: #cdd3e0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  h1 {
+    font-size: 18px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .subtitle {
+    font-size: 12px;
+    color: #667788;
+    margin-bottom: 32px;
+    text-align: center;
+  }
+  .card {
+    background: #16213e;
+    border-radius: 12px;
+    padding: 28px 32px;
+    width: 100%;
+    max-width: 420px;
+    border: 1px solid rgba(255,255,255,0.07);
+  }
+  label {
+    display: block;
+    font-size: 11px;
+    color: #667788;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+    margin-top: 18px;
+  }
+  label:first-of-type { margin-top: 0; }
+  input {
+    width: 100%;
+    background: #0d1b2a;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+    color: #fff;
+    font-size: 16px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus { border-color: #e8003d; }
+  input::placeholder { color: #445566; }
+  button {
+    margin-top: 24px;
+    width: 100%;
+    background: #e8003d;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    border: none;
+    border-radius: 8px;
+    padding: 13px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  button:hover { background: #c0002e; }
+  button:disabled { background: #444; cursor: default; }
+  #status {
+    margin-top: 16px;
+    font-size: 13px;
+    text-align: center;
+    min-height: 20px;
+    font-weight: 600;
+  }
+  #status.ok  { color: #5dff96; }
+  #status.err { color: #ff6677; }
+  .current {
+    margin-top: 28px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    font-size: 12px;
+    color: #667788;
+  }
+  .current span { color: #7eb8f7; word-break: break-all; }
+</style>
+</head>
+<body>
+<h1>🏏 Match Control</h1>
+<p class="subtitle">Set active match — overlay URL never changes</p>
+
+<div class="card">
+  <label for="matchId">Match ID</label>
+  <input id="matchId" type="number" inputmode="numeric" placeholder="e.g. 8984" autofocus>
+
+  <label for="clubId">Club ID</label>
+  <input id="clubId" type="number" inputmode="numeric" placeholder="e.g. 11707">
+
+  <button id="btn" onclick="setMatch()">Set Match</button>
+  <div id="status"></div>
+
+  <div class="current">
+    Current match: <span id="current-url">loading…</span>
+  </div>
+</div>
+
+<script>
+  async function loadCurrent() {
+    try {
+      const r = await fetch('/health');
+      const d = await r.json();
+      document.getElementById('current-url').textContent = d.matchUrl || 'none';
+    } catch {
+      document.getElementById('current-url').textContent = 'unavailable';
+    }
+  }
+
+  async function setMatch() {
+    const matchId = document.getElementById('matchId').value.trim();
+    const clubId  = document.getElementById('clubId').value.trim();
+    const status  = document.getElementById('status');
+    const btn     = document.getElementById('btn');
+
+    if (!matchId || !clubId) {
+      status.textContent = 'Enter both Match ID and Club ID';
+      status.className = 'err';
+      return;
+    }
+
+    btn.disabled = true;
+    status.textContent = 'Setting match…';
+    status.className = '';
+
+    try {
+      const r = await fetch(`/set-match?matchId=${encodeURIComponent(matchId)}&clubId=${encodeURIComponent(clubId)}`);
+      const d = await r.json();
+      if (d.success) {
+        status.textContent = '✓ Match set — overlay updating';
+        status.className = 'ok';
+        document.getElementById('current-url').textContent = d.url;
+      } else {
+        status.textContent = `Error: ${d.error}`;
+        status.className = 'err';
+      }
+    } catch (e) {
+      status.textContent = 'Network error';
+      status.className = 'err';
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') setMatch();
+  });
+
+  loadCurrent();
+</script>
+</body>
+</html>

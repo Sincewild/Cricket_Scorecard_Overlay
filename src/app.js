@@ -83,6 +83,10 @@ function createApp(options) {
     res.sendFile(path.join(staticDir, 'overlay.html'));
   });
 
+  app.get('/admin', (req, res) => {
+    res.sendFile(path.join(staticDir, 'admin.html'));
+  });
+
   app.use((req, res) => {
     res.status(404).json({ error: 'Not found' });
   });
