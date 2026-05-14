@@ -42,7 +42,19 @@ function createApp(options) {
   });
 
   app.get('/set-match', setMatchLimiter, async (req, res) => {
-    const validation = validateMatchUrl(req.query.url);
+    let rawUrl = req.query.url;
+
+    // Accept matchId + clubId shorthand
+    if (!rawUrl && req.query.matchId && req.query.clubId) {
+      const matchId = String(req.query.matchId).replace(/\D/g, '');
+      const clubId  = String(req.query.clubId).replace(/\D/g, '');
+      if (!matchId || !clubId) {
+        return res.status(400).json({ success: false, error: 'matchId and clubId must be numeric' });
+      }
+      rawUrl = `https://cricclubs.com/viewScorecard.do?matchId=${matchId}&clubId=${clubId}`;
+    }
+
+    const validation = validateMatchUrl(rawUrl);
     if (!validation.valid) {
       return res.status(400).json({ success: false, error: validation.reason });
     }

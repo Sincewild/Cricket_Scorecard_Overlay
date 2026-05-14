@@ -23,7 +23,7 @@
     right: 0;
     display: flex;
     align-items: stretch;
-    height: 68px;
+    height: 80px;
     font-weight: 600;
     letter-spacing: 0.3px;
     filter: drop-shadow(0 4px 24px rgba(0,0,0,0.6));
@@ -63,13 +63,13 @@
   #team1-block {
     background: #1a1a2e;
     color: #fff;
-    padding: 0 6px;
+    padding: 0 10px;
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
-    gap: 7px;
-    min-width: 178px;
+    gap: 8px;
+    min-width: 230px;
     border-right: 3px solid #e8003d;
   }
 
@@ -92,29 +92,29 @@
   }
 
   #team1-name {
-    font-size: 10px;
+    font-size: 12px;
     color: #aab0c0;
     font-weight: 600;
     letter-spacing: 1.2px;
     text-transform: uppercase;
-    margin-bottom: 1px;
+    margin-bottom: 2px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   #team1-score {
-    font-size: 19px;
+    font-size: 26px;
     font-weight: 800;
     color: #fff;
     line-height: 1;
   }
 
   #team1-overs {
-    font-size: 11px;
+    font-size: 12px;
     color: #7eb8f7;
     font-weight: 500;
-    margin-top: 1px;
+    margin-top: 2px;
   }
 
   /* VS block */
@@ -135,40 +135,40 @@
   #team2-block {
     background: #0f3460;
     color: #fff;
-    padding: 0 6px;
+    padding: 0 10px;
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
-    gap: 7px;
-    min-width: 178px;
+    gap: 8px;
+    min-width: 230px;
     border-left: 3px solid #e8003d;
   }
 
   #team2-name {
-    font-size: 10px;
+    font-size: 12px;
     color: #aab0c0;
     font-weight: 600;
     letter-spacing: 1.2px;
     text-transform: uppercase;
-    margin-bottom: 1px;
+    margin-bottom: 2px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   #team2-score {
-    font-size: 19px;
+    font-size: 26px;
     font-weight: 800;
     color: #fff;
     line-height: 1;
   }
 
   #team2-overs {
-    font-size: 11px;
+    font-size: 12px;
     color: #7eb8f7;
     font-weight: 500;
-    margin-top: 1px;
+    margin-top: 2px;
   }
 
   /* Match info — inning-aware panel */
@@ -271,8 +271,8 @@
     flex-direction: column;
     justify-content: center;
     gap: 4px;
-    flex: 0.75;
-    min-width: 280px;
+    flex: 0.55;
+    min-width: 220px;
     border-left: 1px solid rgba(255,255,255,0.08);
   }
 
@@ -327,8 +327,8 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    flex: 0.6;
-    min-width: 240px;
+    flex: 0.45;
+    min-width: 190px;
     border-left: 1px solid rgba(255,255,255,0.08);
   }
 
@@ -518,6 +518,8 @@
 </head>
 <body>
 
+<!-- 1px anchor prevents YOLOBox from treating the page as blank and auto-hiding -->
+<div style="position:fixed;top:0;left:0;width:1px;height:1px;background:#010101;opacity:0.01;pointer-events:none;"></div>
 <div id="error-banner"></div>
 <div id="result-banner">
   <span class="result-spark"></span>
