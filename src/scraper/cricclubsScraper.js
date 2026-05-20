@@ -54,7 +54,7 @@ class CricClubsScraper {
       await page.route('**/google-analytics**', (route) => route.abort());
 
       await page.goto(matchUrl, {
-        waitUntil: 'domcontentloaded',
+        waitUntil: 'networkidle',
         timeout: this.timeoutMs
       });
 
