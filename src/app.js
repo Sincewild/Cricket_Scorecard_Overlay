@@ -12,6 +12,7 @@ function createApp(options) {
   const scraper = options.scraper;
 
   app.disable('x-powered-by');
+  app.set('trust proxy', 1);
 
   app.use(cors({
     origin: '*',
