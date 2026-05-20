@@ -13,8 +13,8 @@ class CricClubsScraper {
       return;
     }
 
-    const { launch } = await import('cloakbrowser');
-    this.browser = await launch({
+    const { chromium } = require('playwright');
+    this.browser = await chromium.launch({
       headless: true,
       args: this.chromiumArgs
     });
