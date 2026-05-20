@@ -59,6 +59,7 @@ class CricClubsScraper {
       await page.waitForTimeout(this.waitAfterLoadMs);
 
       const fullText = await page.evaluate(() => document.body.innerText);
+      this.lastRawText = fullText;
       return parseScore(fullText);
     } finally {
       await context.close();

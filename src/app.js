@@ -68,6 +68,11 @@ function createApp(options) {
     }
   });
 
+  app.get('/debug-scrape', (req, res) => {
+    const text = scraper.lastRawText || '';
+    res.type('text/plain').send(text.slice(0, 1500));
+  });
+
   app.get('/health', (req, res) => {
     const score = scoreService.getScore();
     res.json({
