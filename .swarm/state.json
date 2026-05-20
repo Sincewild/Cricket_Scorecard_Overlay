@@ -1,0 +1,8 @@
+{
+  "id": "swarm-1779248311078-ptewnv",
+  "topology": "hierarchical",
+  "maxAgents": 15,
+  "strategy": "development",
+  "initializedAt": "2026-05-20T03:38:31.078Z",
+  "status": "ready"
+}
