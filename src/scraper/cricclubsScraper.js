@@ -1,4 +1,3 @@
-const { chromium } = require('playwright');
 const { parseScore } = require('./parseScore');
 
 class CricClubsScraper {
@@ -14,7 +13,8 @@ class CricClubsScraper {
       return;
     }
 
-    this.browser = await chromium.launch({
+    const { launch } = await import('cloakbrowser');
+    this.browser = await launch({
       headless: true,
       args: this.chromiumArgs
     });
