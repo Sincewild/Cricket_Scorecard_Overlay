@@ -7,7 +7,8 @@ async function main() {
   const scraper = new CricClubsScraper({
     chromiumArgs: config.chromiumArgs,
     timeoutMs: config.scrapeTimeoutMs,
-    waitAfterLoadMs: config.waitAfterLoadMs
+    waitAfterLoadMs: config.waitAfterLoadMs,
+    proxyUrl: config.proxyUrl
   });
 
   await scraper.start();

@@ -6,6 +6,7 @@ class CricClubsScraper {
     this.chromiumArgs = options.chromiumArgs || [];
     this.timeoutMs = options.timeoutMs || 30000;
     this.waitAfterLoadMs = options.waitAfterLoadMs || 3000;
+    this.proxyUrl = options.proxyUrl || null;
   }
 
   async start() {
@@ -14,10 +15,14 @@ class CricClubsScraper {
     }
 
     const { launch } = await import('cloakbrowser');
-    this.browser = await launch({
+    const launchOptions = {
       headless: true,
       args: this.chromiumArgs
-    });
+    };
+    if (this.proxyUrl) {
+      launchOptions.proxy = this.proxyUrl;
+    }
+    this.browser = await launch(launchOptions);
   }
 
   async stop() {
@@ -39,7 +44,6 @@ class CricClubsScraper {
     }
 
     const context = await this.browser.newContext({
-      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       viewport: { width: 1280, height: 800 }
     });
 
