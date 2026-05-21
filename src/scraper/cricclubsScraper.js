@@ -56,7 +56,7 @@ class CricClubsScraper {
         timeout: this.timeoutMs
       });
 
-      await page.waitForTimeout(this.waitAfterLoadMs);
+      await new Promise(r => setTimeout(r, this.waitAfterLoadMs));
 
       const fullText = await page.evaluate(() => document.body.innerText);
       this.lastRawText = fullText;

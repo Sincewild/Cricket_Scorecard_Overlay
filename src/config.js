@@ -5,6 +5,7 @@ const NORMAL_INTERVAL_MS = Number.parseInt(process.env.NORMAL_INTERVAL_MS || '20
 const POST_OVER_INTERVAL_MS = Number.parseInt(process.env.POST_OVER_INTERVAL_MS || '45000', 10);
 const MATCH_URL = process.env.MATCH_URL || null;
 const SCRAPE_TIMEOUT_MS = Number.parseInt(process.env.SCRAPE_TIMEOUT_MS || '60000', 10);
+const WAIT_AFTER_LOAD_MS = Number.parseInt(process.env.WAIT_AFTER_LOAD_MS || '8000', 10);
 
 const config = {
   port: Number.isFinite(PORT) ? PORT : 3000,
@@ -12,6 +13,7 @@ const config = {
   postOverIntervalMs: Number.isFinite(POST_OVER_INTERVAL_MS) ? POST_OVER_INTERVAL_MS : 45000,
   matchUrl: MATCH_URL,
   scrapeTimeoutMs: Number.isFinite(SCRAPE_TIMEOUT_MS) ? SCRAPE_TIMEOUT_MS : 60000,
+  waitAfterLoadMs: Number.isFinite(WAIT_AFTER_LOAD_MS) ? WAIT_AFTER_LOAD_MS : 8000,
   staticDir: path.join(__dirname, '..', 'public'),
   logosDir: path.join(__dirname, 'logos'),
   chromiumArgs: process.env.NODE_ENV === 'production' ? [
