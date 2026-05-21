@@ -14,7 +14,8 @@ function createTeamLogoResolver(options) {
   // Explicit aliases for known teams.
   const aliasMap = {
     'jerseylions': 'JerseyLions.png',
-    'usaca': 'USACA.png'
+    'usaca': 'USACA.png',
+    'ucc': 'ucc.jpg'
   };
 
   let files = [];
