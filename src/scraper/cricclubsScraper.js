@@ -13,10 +13,8 @@ class CricClubsScraper {
       return;
     }
 
-    const { chromium } = require('playwright-extra');
-    const stealth = require('puppeteer-extra-plugin-stealth');
-    chromium.use(stealth());
-    this.browser = await chromium.launch({
+    const { launch } = await import('cloakbrowser');
+    this.browser = await launch({
       headless: true,
       args: this.chromiumArgs
     });
