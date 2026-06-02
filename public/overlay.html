@@ -4,16 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=1920, initial-scale=1.0">
 <title>Cricket Live Overlay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  html {
-    background: transparent;
-  }
+  html { background: transparent; }
 
   body {
     background: transparent;
-    font-family: 'Segoe UI', Arial, sans-serif;
+    font-family: 'Rajdhani', 'Segoe UI', Arial, sans-serif;
     overflow: hidden;
     width: 100vw;
     height: 100vh;
@@ -27,65 +28,90 @@
     right: 0;
     display: flex;
     align-items: stretch;
-    height: 80px;
+    height: 82px;
     font-weight: 600;
     letter-spacing: 0.3px;
-    filter: drop-shadow(0 4px 24px rgba(0,0,0,0.6));
+    filter: drop-shadow(0 6px 32px rgba(0,0,0,0.75));
+    /* gold top-accent line across entire bar */
+    border-top: 2px solid rgba(255, 200, 60, 0.55);
   }
 
   /* LIVE badge */
   #live-badge {
-    background: #e8003d;
+    background: linear-gradient(180deg, #ff1a4e 0%, #c4002e 100%);
     color: #fff;
-    font-size: 9px;
-    font-weight: 800;
-    letter-spacing: 2px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 3px;
     text-transform: uppercase;
-    padding: 0 10px;
+    padding: 0 12px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 5px;
-    min-width: 46px;
+    gap: 4px;
+    min-width: 50px;
     flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #live-badge::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+    pointer-events: none;
   }
 
   #live-badge .dot {
-    width: 7px; height: 7px;
+    width: 8px; height: 8px;
     border-radius: 50%;
     background: #fff;
-    animation: blink 1.2s infinite;
+    box-shadow: 0 0 8px 2px rgba(255,255,255,0.7);
+    animation: live-pulse 1.4s ease-in-out infinite;
     flex-shrink: 0;
   }
 
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.15; }
+  @keyframes live-pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 8px 2px rgba(255,255,255,0.7); }
+    50% { opacity: 0.2; box-shadow: none; }
   }
 
-  /* Team 1 */
+  /* ── TEAM BLOCKS ── */
   #team1-block {
-    background: #1a1a2e;
+    background: linear-gradient(135deg, #182444 0%, #253d65 60%, #1a2d50 100%);
     color: #fff;
-    padding: 0 10px;
+    padding: 0 14px;
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
-    gap: 8px;
-    min-width: 230px;
-    border-right: 3px solid #e8003d;
+    gap: 10px;
+    min-width: 240px;
+    border-right: none;
+    position: relative;
+  }
+
+  #team1-block::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 12%; bottom: 12%;
+    width: 2px;
+    background: linear-gradient(180deg, transparent, rgba(255,195,50,0.8), transparent);
   }
 
   .team-logo {
-    width: 38px;
-    height: 38px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
     object-fit: cover;
     display: none;
-    border: 1px solid rgba(255,255,255,0.35);
+    border: 2px solid rgba(255,200,60,0.5);
     background: rgba(255,255,255,0.07);
     flex-shrink: 0;
+    box-shadow: 0 0 10px rgba(255,200,60,0.2);
   }
 
   .team-meta {
@@ -96,119 +122,162 @@
   }
 
   #team1-name {
-    font-size: 12px;
-    color: #aab0c0;
-    font-weight: 600;
-    letter-spacing: 1.2px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    color: rgba(255,200,60,0.85);
+    font-weight: 700;
+    letter-spacing: 2px;
     text-transform: uppercase;
-    margin-bottom: 2px;
+    margin-bottom: 1px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   #team1-score {
-    font-size: 26px;
-    font-weight: 800;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 34px;
+    font-weight: 700;
     color: #fff;
     line-height: 1;
+    letter-spacing: 1px;
+    text-shadow: 0 0 20px rgba(255,255,255,0.15);
   }
 
   #team1-overs {
-    font-size: 12px;
+    font-size: 11px;
     color: #7eb8f7;
-    font-weight: 500;
-    margin-top: 2px;
+    font-weight: 600;
+    margin-top: 1px;
+    letter-spacing: 0.5px;
   }
 
   /* VS block */
   #vs-block {
-    background: #e8003d;
+    background: linear-gradient(180deg, #ff1a4e 0%, #c4002e 100%);
     color: #fff;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    padding: 0 10px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    padding: 0 11px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #vs-block::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 55%);
+    pointer-events: none;
   }
 
   /* Team 2 */
   #team2-block {
-    background: #0f3460;
+    background: linear-gradient(135deg, #182444 0%, #1a3a6a 60%, #152240 100%);
     color: #fff;
-    padding: 0 10px;
+    padding: 0 14px;
     display: flex;
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
-    gap: 8px;
-    min-width: 230px;
-    border-left: 3px solid #e8003d;
+    gap: 10px;
+    min-width: 240px;
+    position: relative;
+  }
+
+  #team2-block::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 12%; bottom: 12%;
+    width: 2px;
+    background: linear-gradient(180deg, transparent, rgba(255,195,50,0.8), transparent);
   }
 
   #team2-name {
-    font-size: 12px;
-    color: #aab0c0;
-    font-weight: 600;
-    letter-spacing: 1.2px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    color: rgba(255,200,60,0.85);
+    font-weight: 700;
+    letter-spacing: 2px;
     text-transform: uppercase;
-    margin-bottom: 2px;
+    margin-bottom: 1px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   #team2-score {
-    font-size: 26px;
-    font-weight: 800;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 34px;
+    font-weight: 700;
     color: #fff;
     line-height: 1;
+    letter-spacing: 1px;
+    text-shadow: 0 0 20px rgba(255,255,255,0.15);
   }
 
   #team2-overs {
-    font-size: 12px;
+    font-size: 11px;
     color: #7eb8f7;
-    font-weight: 500;
-    margin-top: 2px;
+    font-weight: 600;
+    margin-top: 1px;
+    letter-spacing: 0.5px;
   }
 
-  /* Match info — inning-aware panel */
+  /* ── PANEL BASE — glass dark ── */
+  #match-info,
+  #batsmen-strip,
+  #bowler-strip,
+  #lastball-strip {
+    background: linear-gradient(180deg, #152038 0%, #0e1828 100%);
+    border-left: 1px solid rgba(255,255,255,0.07);
+  }
+
+  /* Match info panel */
   #match-info {
-    background: #16213e;
     color: #cdd3e0;
-    padding: 0 8px;
+    padding: 0 10px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     flex: 0.45;
-    border-left: 1px solid rgba(255,255,255,0.08);
     min-width: 120px;
     overflow: hidden;
   }
 
-  /* 1st inning / completed modes */
   #info-mode-simple {
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 2px;
   }
+
   #info-label {
-    font-size: 7px;
-    color: #667788;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 8px;
+    color: rgba(255,200,60,0.6);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
+    font-weight: 600;
   }
+
   #info-crr-simple {
-    font-size: 10px;
-    color: #f0c040;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    color: #ffd040;
     font-weight: 700;
+    letter-spacing: 0.5px;
   }
+
   #info-result-text {
-    font-size: 11px;
-    color: #f0c040;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    color: #ffd040;
     font-weight: 700;
     display: flex;
     align-items: center;
@@ -217,9 +286,11 @@
     min-width: 0;
     position: relative;
   }
+
   #info-result-text.scrolling {
     mask-image: linear-gradient(to right, transparent 0, black 10px, black calc(100% - 10px), transparent 100%);
   }
+
   #info-result-track {
     display: inline-flex;
     align-items: center;
@@ -229,9 +300,11 @@
     backface-visibility: hidden;
     transform: translate3d(0, 0, 0);
   }
+
   #info-result-text.scrolling #info-result-track {
     animation: marquee 18s linear infinite;
   }
+
   #info-result-track .result-copy {
     flex: 0 0 auto;
     white-space: nowrap;
@@ -242,90 +315,103 @@
     to { transform: translate3d(-50%, 0, 0); }
   }
 
-  /* 2nd inning chasing mode */
   #info-mode-chase {
     display: none;
     flex-direction: column;
-    gap: 1px;
+    gap: 2px;
   }
+
   #info-need {
-    font-size: 11px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
     font-weight: 800;
     color: #fff;
     white-space: nowrap;
+    letter-spacing: 0.3px;
   }
-  #info-need .need-runs  { color: #ff7755; }
-  #info-need .need-balls { color: #aab0c0; }
+
+  #info-need .need-runs  { color: #ff7a55; }
+  #info-need .need-balls { color: #90a0b8; }
+
   #info-rr {
-    font-size: 9px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
     display: flex;
     flex-direction: column;
-    gap: 1px;
+    gap: 0;
   }
-  .info-rr-label { color: #667788; margin-right: 3px; }
-  .info-crr-val  { color: #f0c040; font-weight: 700; }
-  .info-rrr-val  { color: #ff7755; font-weight: 700; }
 
-  /* Batsmen */
+  .info-rr-label { color: rgba(255,200,60,0.55); margin-right: 4px; font-weight: 600; letter-spacing: 1px; font-size: 9px; }
+  .info-crr-val  { color: #ffd040; font-weight: 700; }
+  .info-rrr-val  { color: #ff7a55; font-weight: 700; }
+
+  /* ── BATSMEN ── */
   #batsmen-strip {
-    background: #0d1b2a;
     color: #fff;
     padding: 0 14px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 4px;
+    gap: 5px;
     flex: 0.55;
     min-width: 220px;
-    border-left: 1px solid rgba(255,255,255,0.08);
   }
 
   #batsmen-label {
-    font-size: 9px;
-    color: #667788;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 8px;
+    color: rgba(255,200,60,0.6);
     text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 2px;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+    margin-bottom: 1px;
   }
 
   .batsman-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 11px;
   }
 
   .batsman-name {
-    color: #cdd3e0;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    color: #d8e0ee;
     font-weight: 600;
     max-width: 150px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    letter-spacing: 0.3px;
+  }
+
+  .batsman-name.on-strike {
+    color: #fff;
   }
 
   .batsman-name.on-strike::after {
-    content: ' ✦';
-    color: #f0c040;
-    font-size: 9px;
+    content: ' ❯';
+    color: #ffd040;
+    font-size: 10px;
   }
 
   .batsman-stat {
+    font-family: 'Barlow Condensed', sans-serif;
     color: #7eb8f7;
-    font-weight: 700;
-    font-size: 12px;
+    font-weight: 600;
+    font-size: 14px;
     white-space: nowrap;
+    letter-spacing: 0.5px;
   }
 
   .batsman-sr {
-    color: #667788;
+    color: #445566;
     font-size: 10px;
     margin-left: 4px;
   }
 
-  /* Bowler */
+  /* ── BOWLER ── */
   #bowler-strip {
-    background: #0d1b2a;
     color: #fff;
     padding: 0 14px;
     display: flex;
@@ -333,133 +419,125 @@
     justify-content: center;
     flex: 0.45;
     min-width: 190px;
-    border-left: 1px solid rgba(255,255,255,0.08);
   }
 
   #bowler-label {
-    font-size: 9px;
-    color: #667788;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 8px;
+    color: rgba(255,200,60,0.6);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
+    font-weight: 600;
     margin-bottom: 2px;
   }
 
   #bowler-name {
-    font-size: 12px;
-    color: #cdd3e0;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    color: #d8e0ee;
     font-weight: 700;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 140px;
+    letter-spacing: 0.3px;
   }
 
   #bowler-stat {
-    font-size: 11px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
     color: #f9a64a;
-    font-weight: 600;
+    font-weight: 700;
     margin-top: 2px;
+    letter-spacing: 0.5px;
   }
 
-  /* This over balls */
+  /* ── THIS OVER BALLS ── */
   #lastball-strip {
-    background: #0d1b2a;
     padding: 0 14px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-width: 120px;
-    border-left: 1px solid rgba(255,255,255,0.08);
+    min-width: 130px;
     flex-shrink: 0;
   }
 
   #lastball-label {
-    font-size: 9px;
-    color: #667788;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 8px;
+    color: rgba(255,200,60,0.6);
     text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 5px;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+    margin-bottom: 6px;
   }
 
   #balls-row {
     display: flex;
-    gap: 4px;
+    gap: 5px;
   }
 
   .ball {
-    width: 22px; height: 22px;
+    width: 24px; height: 24px;
     border-radius: 50%;
-    font-size: 9px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
     font-weight: 800;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #1a2a3a;
-    color: #667788;
+    background: #131f2e;
+    color: #3a4f66;
+    border: 1px solid rgba(255,255,255,0.06);
   }
 
-  .ball.four    { background: #1a5c30; color: #5dff96; }
-  .ball.six     { background: #6b1a1a; color: #ff9999; }
-  .ball.wicket  { background: #e8003d; color: #fff; }
-  .ball.wide    { background: #3a3a1a; color: #ffcc44; }
-  .ball.noball  { background: #3a2a1a; color: #ffaa44; }
-  .ball.dot     { background: #111e2a; color: #445566; }
-  .ball.run     { background: #1a2a3a; color: #cdd3e0; }
+  .ball.four   { background: #0d3d1e; color: #3eff82; border-color: rgba(62,255,130,0.3); box-shadow: 0 0 8px rgba(62,255,130,0.25); }
+  .ball.six    { background: #3d0d1e; color: #ff6b8a; border-color: rgba(255,107,138,0.3); box-shadow: 0 0 8px rgba(255,107,138,0.3); }
+  .ball.wicket { background: #c4002e; color: #fff;    border-color: rgba(255,60,100,0.5);  box-shadow: 0 0 10px rgba(196,0,46,0.6); }
+  .ball.wide   { background: #2e2900; color: #ffd040; border-color: rgba(255,208,64,0.25); }
+  .ball.noball { background: #2e1800; color: #ff9a44; border-color: rgba(255,154,68,0.25); }
+  .ball.dot    { background: #0a1520; color: #2a3d52; border-color: rgba(255,255,255,0.04); }
+  .ball.run    { background: #131f2e; color: #c0d0e8; border-color: rgba(255,255,255,0.08); }
 
-  /* Refresh indicator */
+  /* ── REFRESH INDICATOR ── */
   #refresh-indicator {
     position: fixed;
-    bottom: 114px;
+    bottom: 116px;
     right: 14px;
+    font-family: 'Barlow Condensed', monospace;
     font-size: 10px;
-    color: rgba(255,255,255,0.25);
-    font-family: monospace;
+    color: rgba(255,255,255,0.2);
+    letter-spacing: 0.5px;
   }
 
-  /* Error state */
+  /* ── ERROR BANNER ── */
   #error-banner {
     display: none;
     position: fixed;
     top: 0; left: 0; right: 0;
-    background: rgba(232,0,61,0.85);
+    background: rgba(196,0,46,0.9);
     color: #fff;
-    font-size: 11px;
-    font-weight: 600;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
     padding: 6px 16px;
     text-align: center;
   }
 
   @media (max-width: 1360px) {
-    #lastball-strip {
-      display: none;
-    }
+    #lastball-strip { display: none; }
   }
 
   @media (max-width: 1180px) {
-    #match-info {
-      min-width: 90px;
-      padding: 0 6px;
-      flex: 0.35;
-    }
-
-    #team1-block,
-    #team2-block {
-      min-width: 156px;
-    }
-
-    #batsmen-strip {
-      min-width: 240px;
-      flex: 0.7;
-    }
-
-    #bowler-strip {
-      min-width: 200px;
-      flex: 0.55;
-    }
+    #match-info { min-width: 90px; padding: 0 6px; flex: 0.35; }
+    #team1-block, #team2-block { min-width: 160px; }
+    #batsmen-strip { min-width: 240px; flex: 0.7; }
+    #bowler-strip  { min-width: 200px; flex: 0.55; }
   }
 
-  /* Result banner for finished matches */
+  /* ── RESULT BANNER ── */
   #result-banner {
     display: none;
     position: fixed;
@@ -467,15 +545,16 @@
     top: 18px;
     transform: translateX(-50%);
     z-index: 30;
-    padding: 12px 22px;
+    padding: 13px 28px;
     border-radius: 999px;
     color: #fff9dc;
-    background: linear-gradient(135deg, rgba(232,0,61,0.95), rgba(255,122,0,0.92));
-    border: 1px solid rgba(255,255,255,0.14);
-    box-shadow: 0 10px 34px rgba(0,0,0,0.35);
-    font-size: 22px;
+    background: linear-gradient(135deg, rgba(220,0,55,0.97), rgba(255,120,0,0.94));
+    border: 1px solid rgba(255,220,80,0.25);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06) inset;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 24px;
     font-weight: 900;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
     white-space: nowrap;
     overflow: hidden;
   }
@@ -483,18 +562,14 @@
   #result-banner.show {
     display: flex;
     align-items: center;
-    gap: 12px;
-    animation: result-pop 420ms ease-out;
+    gap: 14px;
+    animation: result-pop 420ms cubic-bezier(0.34,1.56,0.64,1);
   }
 
-  .result-banner-text {
-    position: relative;
-    z-index: 2;
-  }
+  .result-banner-text { position: relative; z-index: 2; }
 
   .result-spark {
-    width: 10px;
-    height: 10px;
+    width: 10px; height: 10px;
     border-radius: 50%;
     background: #fff3b0;
     box-shadow:
@@ -505,18 +580,16 @@
     animation: spark-bounce 1s ease-in-out infinite alternate;
   }
 
-  .result-spark.right {
-    animation-delay: 140ms;
-  }
+  .result-spark.right { animation-delay: 140ms; }
 
   @keyframes result-pop {
-    from { transform: translateX(-50%) scale(0.9); opacity: 0; }
-    to { transform: translateX(-50%) scale(1); opacity: 1; }
+    from { transform: translateX(-50%) scale(0.85); opacity: 0; }
+    to   { transform: translateX(-50%) scale(1);    opacity: 1; }
   }
 
   @keyframes spark-bounce {
     from { transform: scale(0.95) rotate(0deg); opacity: 0.7; }
-    to { transform: scale(1.15) rotate(18deg); opacity: 1; }
+    to   { transform: scale(1.15) rotate(18deg); opacity: 1; }
   }
 </style>
 </head>
@@ -598,14 +671,7 @@
 
   <div id="lastball-strip">
     <div id="lastball-label">This Over</div>
-    <div id="balls-row">
-      <div class="ball dot">·</div>
-      <div class="ball dot">·</div>
-      <div class="ball dot">·</div>
-      <div class="ball dot">·</div>
-      <div class="ball dot">·</div>
-      <div class="ball dot">·</div>
-    </div>
+    <div id="balls-row"></div>
   </div>
 
 </div>
@@ -659,10 +725,10 @@
   }
 
   function renderBall(val) {
-    if (!val) return '<div class="ball dot">·</div>';
+    if (!val) return '';
     const v = String(val).toUpperCase().trim();
     let cls = 'run', label = v;
-    if (v === '0' || v === '.')  { cls = 'dot';    label = '·'; }
+    if (v === '0' || v === '.')  { cls = 'dot';    label = '0'; }
     else if (v === '4')          { cls = 'four';   label = '4'; }
     else if (v === '6')          { cls = 'six';    label = '6'; }
     else if (v === 'W')          { cls = 'wicket'; label = 'W'; }
@@ -794,10 +860,9 @@
 
     // This over
     if (data.thisOver && data.thisOver.length > 0) {
-      // Pad to 6 balls
-      const balls = [...data.thisOver];
-      while (balls.length < 6) balls.push('.');
-      document.getElementById('balls-row').innerHTML = balls.slice(0,6).map(renderBall).join('');
+      document.getElementById('balls-row').innerHTML = data.thisOver.slice(0,8).map(renderBall).join('');
+    } else {
+      document.getElementById('balls-row').innerHTML = '';
     }
 
     // Error

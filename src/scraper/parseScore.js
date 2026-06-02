@@ -253,7 +253,7 @@ function parseScore(text) {
 
   // ── This over ─────────────────────────────────────────────────────────────
   // New format: "OV {n}\n{ball1}\n{ball2}...\nShare"
-  const ovSectionMatch = text.match(/\bOV \d+\n([\s\S]+?)(?=\nShare\b|\nInfo\b)/);
+  const ovSectionMatch = text.match(/\bOV \d+\n([\s\S]+?)(?=\nOV |\nShare\b|\nInfo\b)/);
   if (ovSectionMatch) {
     const balls = ovSectionMatch[1].split('\n')
       .map(l => l.trim())

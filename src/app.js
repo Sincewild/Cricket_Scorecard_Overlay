@@ -10,14 +10,6 @@ function createApp(options) {
   const scoreService = options.scoreService;
   const staticDir = options.staticDir;
   const scraper = options.scraper;
-  const ADMIN_TOKEN = process.env.ADMIN_TOKEN;
-
-  function requireToken(req, res, next) {
-    if (!ADMIN_TOKEN) return next();
-    if (req.query.token === ADMIN_TOKEN) return next();
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
   app.disable('x-powered-by');
   app.set('trust proxy', 1);
 
@@ -52,7 +44,7 @@ function createApp(options) {
     res.json(scoreService.getScore());
   });
 
-  app.get('/set-match', setMatchLimiter, requireToken, async (req, res) => {
+  app.get('/set-match', setMatchLimiter, async (req, res) => {
     let rawUrl = req.query.url;
 
     // Accept matchId + clubId shorthand
@@ -78,14 +70,19 @@ function createApp(options) {
     }
   });
 
-  app.get('/debug-scrape', requireToken, (req, res) => {
+  app.get('/unset-match', (req, res) => {
+    scoreService.reset();
+    return res.json({ success: true, message: 'Match cleared, scraping stopped' });
+  });
+
+  app.get('/debug-scrape', (req, res) => {
     const text = scraper.lastRawText || '';
     const start = parseInt(req.query.offset) || 0;
     const limit = parseInt(req.query.limit) || 1500;
     res.type('text/plain').send(text.slice(start, start + limit));
   });
 
-  app.get('/debug-batter', requireToken, (req, res) => {
+  app.get('/debug-batter', (req, res) => {
     const text = scraper.lastRawText || '';
     const idx = text.indexOf('Batter');
     if (idx === -1) return res.type('text/plain').send('Batter header not found');
@@ -119,7 +116,7 @@ function createApp(options) {
     res.sendFile(path.join(staticDir, 'overlay.html'));
   });
 
-  app.get('/admin', requireToken, (req, res) => {
+  app.get('/admin', (req, res) => {
     res.sendFile(path.join(staticDir, 'admin.html'));
   });
 

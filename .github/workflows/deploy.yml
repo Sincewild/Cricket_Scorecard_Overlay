@@ -39,3 +39,20 @@ jobs:
 
             echo "--- Deploy complete ---"
             docker compose ps
+
+  smoke:
+    name: Smoke Test
+    needs: deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Wait for container to be ready
+        run: sleep 30
+
+      - name: Run smoke tests
+        run: |
+          chmod +x scripts/smoke-test.sh
+          ./scripts/smoke-test.sh https://overlay.maharj.com

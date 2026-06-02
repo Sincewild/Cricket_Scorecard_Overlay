@@ -139,6 +139,13 @@ class ScoreService {
       this.postOverTimeoutId = null;
     }
   }
+
+  reset() {
+    this.stop();
+    this.scoreCache = createInitialScoreState();
+    this.prevThisOverLength = 0;
+    this.currentIntervalMs = this.normalIntervalMs;
+  }
 }
 
 module.exports = {
