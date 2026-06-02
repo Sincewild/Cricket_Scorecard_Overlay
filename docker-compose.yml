@@ -3,7 +3,7 @@ name: cricket-overlay
 services:
   cricket-overlay:
     build: .
-    image: cricket-overlay:latest
+    image: ghcr.io/sincewild/cricket-overlay:latest
     container_name: cricket-overlay
     restart: unless-stopped
     env_file:
