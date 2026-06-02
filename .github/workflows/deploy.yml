@@ -23,7 +23,7 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           script: |
             set -e
-            cd /var/www/cricket-overlay
+            cd /var/www/Cricket_Scorecard_Overlay
 
             echo "--- Pulling latest code ---"
             git pull origin main

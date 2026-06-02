@@ -31,7 +31,7 @@ else
 fi
 
 # --- .env file ---
-APP_DIR="/var/www/cricket-overlay"
+APP_DIR="/var/www/Cricket_Scorecard_Overlay"
 if [ ! -f "$APP_DIR/.env" ]; then
   echo "[4/4] Creating .env from .env.example — EDIT IT before starting!"
   cp "$APP_DIR/.env.example" "$APP_DIR/.env"
