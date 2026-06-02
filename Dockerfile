@@ -1,6 +1,25 @@
-FROM node:20-slim
+FROM node:20-slim AS deps
 
-# Chromium system dependencies for CloakBrowser/Playwright
+WORKDIR /app
+
+# Install only production dependencies and strip npm cache.
+COPY package*.json ./
+RUN npm ci --omit=dev --no-audit --fund=false && npm cache clean --force
+
+FROM node:20-slim AS browser
+
+# Keep Playwright/CloakBrowser binaries in a predictable path to copy into final image.
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
+WORKDIR /app
+
+COPY package*.json ./
+COPY --from=deps /app/node_modules ./node_modules
+RUN npx cloakbrowser install && rm -rf /root/.npm
+
+FROM node:20-slim AS runtime
+
+# Chromium runtime dependencies for CloakBrowser/Playwright.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libnss3 \
     libatk1.0-0 \
@@ -17,19 +36,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxcb-dri3-0 \
     fonts-liberation \
     ca-certificates \
-    wget \
     && rm -rf /var/lib/apt/lists/*
+
+ENV NODE_ENV=production
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
 WORKDIR /app
 
-# Install dependencies first (layer cached unless package.json changes)
-COPY package*.json ./
-RUN npm install --omit=dev
-
-# Download Chromium binary (cached unless cloakbrowser version changes)
-RUN npx cloakbrowser install
-
-# Copy app source
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=browser /ms-playwright /ms-playwright
 COPY src/ ./src/
 COPY public/ ./public/
 

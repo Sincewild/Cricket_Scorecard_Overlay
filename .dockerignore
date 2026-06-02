@@ -1,0 +1,32 @@
+# VCS and editor files
+.git
+.github
+.vscode
+.idea
+
+# Dependencies and build artifacts
+node_modules
+npm-debug.log*
+yarn-error.log*
+
+# Environment and local runtime files
+.env
+.env.*
+!.env.example
+
+# Project docs and local tooling not required in image
+README.md
+CLAUDE.md
+.instructions.md
+.mcp.json
+.claude
+.claude-flow
+.swarm
+
+# Deployment and ops files not needed at runtime
+docker-compose.yml
+render.yaml
+ecosystem.config.js
+traefik
+nginx
+scripts
