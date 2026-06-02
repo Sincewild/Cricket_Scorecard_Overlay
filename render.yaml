@@ -1,4 +1,4 @@
-buildCommand: npm install && npx cloakbrowser install
+buildCommand: npm install && npx playwright install chromium
 startCommand: npm start
 envVars:
   - key: NODE_ENV
