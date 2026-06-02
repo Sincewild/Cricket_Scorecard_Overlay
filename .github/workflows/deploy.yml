@@ -21,6 +21,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
+          command_timeout: 30m
           script: |
             set -e
             cd /var/www/Cricket_Scorecard_Overlay

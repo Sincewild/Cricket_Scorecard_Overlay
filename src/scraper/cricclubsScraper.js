@@ -14,15 +14,15 @@ class CricClubsScraper {
       return;
     }
 
-    const { launch } = await import('cloakbrowser');
+    const { chromium } = require('playwright-core');
     const launchOptions = {
       headless: true,
       args: this.chromiumArgs
     };
     if (this.proxyUrl) {
-      launchOptions.proxy = this.proxyUrl;
+      launchOptions.proxy = { server: this.proxyUrl };
     }
-    this.browser = await launch(launchOptions);
+    this.browser = await chromium.launch(launchOptions);
   }
 
   async stop() {
