@@ -1,3 +1,5 @@
+name: cricket-overlay
+
 services:
   cricket-overlay:
     build: .

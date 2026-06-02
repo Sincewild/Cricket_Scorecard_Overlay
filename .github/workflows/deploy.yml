@@ -33,6 +33,7 @@ jobs:
             docker compose build --no-cache
 
             echo "--- Restarting container ---"
+            docker rm -f cricket-overlay 2>/dev/null || true
             docker compose down --remove-orphans
             docker compose up -d
 
