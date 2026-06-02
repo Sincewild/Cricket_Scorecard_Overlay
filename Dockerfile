@@ -8,14 +8,17 @@ RUN npm ci --omit=dev --no-audit --fund=false && npm cache clean --force
 
 FROM node:20-slim AS browser
 
-# Keep Playwright/CloakBrowser binaries in a predictable path to copy into final image.
-ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+# CloakBrowser stores binaries in ~/.cloakbrowser by default; pin to a known path.
+ENV CLOAKBROWSER_CACHE_DIR=/cloakbrowser-cache
+ENV CLOAKBROWSER_AUTO_UPDATE=false
 
 WORKDIR /app
 
 COPY package*.json ./
 COPY --from=deps /app/node_modules ./node_modules
-RUN npx cloakbrowser install && rm -rf /root/.npm
+RUN mkdir -p "$CLOAKBROWSER_CACHE_DIR" \
+    && npx cloakbrowser install \
+    && rm -rf /root/.npm
 
 FROM node:20-slim AS runtime
 
@@ -39,12 +42,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production
-ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+ENV CLOAKBROWSER_CACHE_DIR=/cloakbrowser-cache
+ENV CLOAKBROWSER_AUTO_UPDATE=false
 
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=browser /ms-playwright /ms-playwright
+COPY --from=browser /cloakbrowser-cache /cloakbrowser-cache
 COPY src/ ./src/
 COPY public/ ./public/
 
