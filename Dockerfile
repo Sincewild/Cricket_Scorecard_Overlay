@@ -24,7 +24,7 @@ WORKDIR /app
 
 # Install dependencies first (layer cached unless package.json changes)
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm install --omit=dev
 
 # Download Chromium binary (cached unless cloakbrowser version changes)
 RUN npx cloakbrowser install
