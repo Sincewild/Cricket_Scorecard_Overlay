@@ -7,6 +7,7 @@ const MATCH_URL = process.env.MATCH_URL || null;
 const SCRAPE_TIMEOUT_MS = Number.parseInt(process.env.SCRAPE_TIMEOUT_MS || '60000', 10);
 const WAIT_AFTER_LOAD_MS = Number.parseInt(process.env.WAIT_AFTER_LOAD_MS || '8000', 10);
 const PROXY_URL = process.env.PROXY_URL || null;
+const CHROMIUM_EXECUTABLE_PATH = process.env.CHROMIUM_EXECUTABLE_PATH || null;
 
 const config = {
   port: Number.isFinite(PORT) ? PORT : 3000,
@@ -16,6 +17,7 @@ const config = {
   scrapeTimeoutMs: Number.isFinite(SCRAPE_TIMEOUT_MS) ? SCRAPE_TIMEOUT_MS : 60000,
   waitAfterLoadMs: Number.isFinite(WAIT_AFTER_LOAD_MS) ? WAIT_AFTER_LOAD_MS : 8000,
   proxyUrl: PROXY_URL,
+  chromiumExecutablePath: CHROMIUM_EXECUTABLE_PATH,
   staticDir: path.join(__dirname, '..', 'public'),
   logosDir: path.join(__dirname, 'logos'),
   chromiumArgs: process.env.NODE_ENV === 'production' ? [

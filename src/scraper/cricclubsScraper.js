@@ -4,6 +4,7 @@ class CricClubsScraper {
   constructor(options = {}) {
     this.browser = null;
     this.chromiumArgs = options.chromiumArgs || [];
+    this.executablePath = options.executablePath || null;
     this.timeoutMs = options.timeoutMs || 30000;
     this.waitAfterLoadMs = options.waitAfterLoadMs || 3000;
     this.proxyUrl = options.proxyUrl || null;
@@ -17,7 +18,8 @@ class CricClubsScraper {
     const { chromium } = require('playwright-core');
     const launchOptions = {
       headless: true,
-      args: this.chromiumArgs
+      args: this.chromiumArgs,
+      ...(this.executablePath ? { executablePath: this.executablePath } : {})
     };
     if (this.proxyUrl) {
       launchOptions.proxy = { server: this.proxyUrl };

@@ -6,6 +6,7 @@ const { createApp } = require('./app');
 async function main() {
   const scraper = new CricClubsScraper({
     chromiumArgs: config.chromiumArgs,
+    executablePath: config.chromiumExecutablePath,
     timeoutMs: config.scrapeTimeoutMs,
     waitAfterLoadMs: config.waitAfterLoadMs,
     proxyUrl: config.proxyUrl
