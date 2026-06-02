@@ -10,6 +10,13 @@ function createApp(options) {
   const scoreService = options.scoreService;
   const staticDir = options.staticDir;
   const scraper = options.scraper;
+  const ADMIN_TOKEN = process.env.ADMIN_TOKEN;
+
+  function requireToken(req, res, next) {
+    if (!ADMIN_TOKEN) return next();
+    if (req.query.token === ADMIN_TOKEN) return next();
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
 
   app.disable('x-powered-by');
   app.set('trust proxy', 1);
@@ -21,7 +28,10 @@ function createApp(options) {
 
   app.use(helmet({
     contentSecurityPolicy: false,
-    crossOriginEmbedderPolicy: false
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false,
+    crossOriginResourcePolicy: false,
+    frameguard: false
   }));
 
   app.use(express.json({ limit: '16kb' }));
@@ -42,7 +52,7 @@ function createApp(options) {
     res.json(scoreService.getScore());
   });
 
-  app.get('/set-match', setMatchLimiter, async (req, res) => {
+  app.get('/set-match', setMatchLimiter, requireToken, async (req, res) => {
     let rawUrl = req.query.url;
 
     // Accept matchId + clubId shorthand
@@ -68,9 +78,25 @@ function createApp(options) {
     }
   });
 
-  app.get('/debug-scrape', (req, res) => {
+  app.get('/debug-scrape', requireToken, (req, res) => {
     const text = scraper.lastRawText || '';
-    res.type('text/plain').send(text.slice(0, 1500));
+    const start = parseInt(req.query.offset) || 0;
+    const limit = parseInt(req.query.limit) || 1500;
+    res.type('text/plain').send(text.slice(start, start + limit));
+  });
+
+  app.get('/debug-batter', requireToken, (req, res) => {
+    const text = scraper.lastRawText || '';
+    const idx = text.indexOf('Batter');
+    if (idx === -1) return res.type('text/plain').send('Batter header not found');
+    const encoded = text.slice(idx, idx + 300)
+      .split('').map(c => {
+        if (c === '\n') return '\\n\n';
+        if (c === '\t') return '\\t';
+        if (c === '\r') return '\\r';
+        return c;
+      }).join('');
+    res.type('text/plain').send(encoded);
   });
 
   app.get('/health', (req, res) => {
@@ -89,7 +115,11 @@ function createApp(options) {
     res.sendFile(path.join(staticDir, 'overlay.html'));
   });
 
-  app.get('/admin', (req, res) => {
+  app.get('/overlay', (req, res) => {
+    res.sendFile(path.join(staticDir, 'overlay.html'));
+  });
+
+  app.get('/admin', requireToken, (req, res) => {
     res.sendFile(path.join(staticDir, 'admin.html'));
   });
 

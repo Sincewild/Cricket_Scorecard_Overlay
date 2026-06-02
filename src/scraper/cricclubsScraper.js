@@ -74,3 +74,4 @@ class CricClubsScraper {
 module.exports = {
   CricClubsScraper
 };
+

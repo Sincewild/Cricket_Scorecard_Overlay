@@ -101,8 +101,13 @@
 <p class="subtitle">Set active match — overlay URL never changes</p>
 
 <div class="card">
+  <label for="matchUrl">Full Match URL</label>
+  <input id="matchUrl" type="url" placeholder="https://cricclubs.com/USCL/results/..." autofocus>
+
+  <label style="text-align:center;color:#445566;margin-top:12px;margin-bottom:12px;">— or use shorthand —</label>
+
   <label for="matchId">Match ID</label>
-  <input id="matchId" type="number" inputmode="numeric" placeholder="e.g. 8984" autofocus>
+  <input id="matchId" type="number" inputmode="numeric" placeholder="e.g. 8984">
 
   <label for="clubId">Club ID</label>
   <input id="clubId" type="number" inputmode="numeric" placeholder="e.g. 11707">
@@ -127,13 +132,14 @@
   }
 
   async function setMatch() {
-    const matchId = document.getElementById('matchId').value.trim();
-    const clubId  = document.getElementById('clubId').value.trim();
-    const status  = document.getElementById('status');
-    const btn     = document.getElementById('btn');
+    const matchUrl = document.getElementById('matchUrl').value.trim();
+    const matchId  = document.getElementById('matchId').value.trim();
+    const clubId   = document.getElementById('clubId').value.trim();
+    const status   = document.getElementById('status');
+    const btn      = document.getElementById('btn');
 
-    if (!matchId || !clubId) {
-      status.textContent = 'Enter both Match ID and Club ID';
+    if (!matchUrl && (!matchId || !clubId)) {
+      status.textContent = 'Enter a full URL or both Match ID and Club ID';
       status.className = 'err';
       return;
     }
@@ -143,7 +149,11 @@
     status.className = '';
 
     try {
-      const r = await fetch(`/set-match?matchId=${encodeURIComponent(matchId)}&clubId=${encodeURIComponent(clubId)}`);
+      const token = new URLSearchParams(window.location.search).get('token') || '';
+      const params = matchUrl
+        ? `url=${encodeURIComponent(matchUrl)}&token=${encodeURIComponent(token)}`
+        : `matchId=${encodeURIComponent(matchId)}&clubId=${encodeURIComponent(clubId)}&token=${encodeURIComponent(token)}`;
+      const r = await fetch(`/set-match?${params}`);
       const d = await r.json();
       if (d.success) {
         status.textContent = '✓ Match set — overlay updating';
