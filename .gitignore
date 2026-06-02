@@ -1,6 +1,8 @@
 node_modules/
 .env
 *.log
+logs/
 .claude/
 .claude-flow/
 .playwright-browsers/
+traefik/letsencrypt/

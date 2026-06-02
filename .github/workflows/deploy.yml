@@ -1,0 +1,41 @@
+name: Deploy to Hostinger VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            set -e
+            cd /var/www/cricket-overlay
+
+            echo "--- Pulling latest code ---"
+            git pull origin main
+
+            echo "--- Building Docker image ---"
+            docker compose build --no-cache
+
+            echo "--- Restarting container ---"
+            docker compose up -d --remove-orphans
+
+            echo "--- Cleaning up old images ---"
+            docker image prune -f
+
+            echo "--- Deploy complete ---"
+            docker compose ps

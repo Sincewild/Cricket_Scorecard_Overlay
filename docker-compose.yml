@@ -1,0 +1,26 @@
+services:
+  cricket-overlay:
+    build: .
+    image: cricket-overlay:latest
+    container_name: cricket-overlay
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+    # Chromium requires these even inside Docker
+    security_opt:
+      - seccomp:unconfined
+    shm_size: 256mb
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cricket.rule=Host(`overlay.maharj.com`)"
+      - "traefik.http.routers.cricket.entrypoints=websecure"
+      - "traefik.http.routers.cricket.tls.certresolver=letsencrypt"
+      - "traefik.http.services.cricket.loadbalancer.server.port=3000"
+    networks:
+      - traefik-public
+
+networks:
+  traefik-public:
+    external: true
