@@ -29,7 +29,8 @@ async function main() {
     scoreService,
     scraper,
     staticDir: config.staticDir,
-    logosDir: config.logosDir
+    logosDir: config.logosDir,
+    animationDir: config.animationDir
   });
 
   const server = app.listen(config.port, () => {

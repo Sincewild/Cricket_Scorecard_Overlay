@@ -537,6 +537,32 @@
     #bowler-strip  { min-width: 200px; flex: 0.55; }
   }
 
+  /* ── DUCK VIDEO ── */
+  #duck-video-container {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 100;
+    background: transparent;
+    justify-content: center;
+    align-items: flex-end;
+    padding-bottom: 40px;
+  }
+
+  #duck-video-container.show {
+    display: flex;
+  }
+
+  #duck-video {
+    max-width: 40vw;
+    max-height: 80vh;
+    height: 400px;
+    object-fit: contain;
+  }
+
   /* ── RESULT BANNER ── */
   #result-banner {
     display: none;
@@ -597,6 +623,12 @@
 
 <!-- 1px anchor prevents YOLOBox from treating the page as blank and auto-hiding -->
 <div style="position:fixed;top:0;left:0;width:1px;height:1px;background:#010101;opacity:0.01;pointer-events:none;"></div>
+<div id="duck-video-container">
+  <video id="duck-video" playsinline autoplay>
+    <source src="/animation/duck-alpha.webm" type="video/webm">
+    <source src="/animation/duck-sample1-2.mp4" type="video/mp4">
+  </video>
+</div>
 <div id="error-banner"></div>
 <div id="result-banner">
   <span class="result-spark"></span>
@@ -689,6 +721,10 @@
   const FALLBACK_TEAM1_LOGO = params.get('team1Logo') || params.get('logo1') || '';
   const FALLBACK_TEAM2_LOGO = params.get('team2Logo') || params.get('logo2') || '';
 
+  // Duck detection state
+  let prevBat1Name = null;
+  let prevBat1Runs = null;
+
   function safeLogoUrl(value) {
     if (!value || typeof value !== 'string') return '';
 
@@ -735,6 +771,27 @@
     else if (v === 'WD' || v === 'WB' || v === 'WIDE') { cls = 'wide'; label = 'wd'; }
     else if (v === 'NB')         { cls = 'noball'; label = 'nb'; }
     return `<div class="ball ${cls}">${label}</div>`;
+  }
+
+  function playDuckVideo() {
+    const container = document.getElementById('duck-video-container');
+    const video = document.getElementById('duck-video');
+    
+    if (!container || !video) return;
+    
+    container.classList.add('show');
+    video.currentTime = 0;
+    video.play().catch(err => console.warn('Duck video play error:', err));
+    
+    // Hide video when it finishes or after 10 seconds
+    const hideVideo = () => {
+      container.classList.remove('show');
+      video.removeEventListener('ended', hideVideo);
+      clearTimeout(hideTimer);
+    };
+    
+    const hideTimer = setTimeout(hideVideo, 10000);
+    video.addEventListener('ended', hideVideo, { once: true });
   }
 
   function updateUI(data) {
@@ -830,10 +887,21 @@
       document.getElementById('bat1-name').textContent = data.bat1;
       const sr1 = data.bat1sr ? ` · SR ${data.bat1sr}` : '';
       document.getElementById('bat1-stat').textContent = `${data.bat1r} (${data.bat1b})${sr1}`;
+
+      // Duck detection: check if batter changed and previous batter scored 0
+      if (prevBat1Name && prevBat1Name !== data.bat1 && Number(prevBat1Runs) === 0) {
+        playDuckVideo();
+      }
+
+      // Update state for next comparison
+      prevBat1Name = data.bat1;
+      prevBat1Runs = data.bat1r;
     } else {
       document.getElementById('bat1-name').classList.remove('on-strike');
       document.getElementById('bat1-name').textContent = 'No batter data';
       document.getElementById('bat1-stat').textContent = '—';
+      prevBat1Name = null;
+      prevBat1Runs = null;
     }
     if (data.bat2) {
       document.getElementById('bat2-row').style.display = 'flex';

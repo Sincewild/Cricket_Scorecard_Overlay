@@ -20,6 +20,7 @@
       overflow: hidden;
       width: 100vw;
       height: 100vh;
+      font-family: 'Rajdhani', 'Segoe UI', Arial, sans-serif;
     }
 
     /* Logo container positioned in top-left corner */
@@ -45,11 +46,588 @@
       object-fit: contain;
       border-radius: 16px;
     }
+
+    /* ── FULLCARD SCORECARD ── */
+    #fullcard-container {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2000;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      border: 2px solid rgba(255, 200, 60, 0.6);
+      border-radius: 16px;
+      padding: 24px;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+      max-width: 800px;
+      color: #fff;
+    }
+
+    #fullcard-container.show {
+      display: block;
+      animation: fadeInScale 0.4s ease-out;
+    }
+
+    @keyframes fadeInScale {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
+
+    .fullcard-header {
+      font-size: 28px;
+      font-weight: 700;
+      text-align: center;
+      color: rgba(255, 200, 60, 0.9);
+      margin-bottom: 20px;
+      font-family: 'Barlow Condensed', sans-serif;
+      letter-spacing: 2px;
+    }
+
+    .fullcard-teams {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .team-scorecard {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 16px;
+      border-radius: 8px;
+      border-left: 4px solid rgba(255, 200, 60, 0.6);
+    }
+
+    .team-scorecard h3 {
+      font-size: 20px;
+      margin-bottom: 12px;
+      color: rgba(255, 200, 60, 0.9);
+    }
+
+    .team-scorecard .stat {
+      display: flex;
+      justify-content: space-between;
+      margin: 8px 0;
+      font-size: 16px;
+    }
+
+    .team-scorecard .label {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .team-scorecard .value {
+      font-weight: 600;
+      color: #fff;
+    }
+
+    /* ── DUCK ANIMATION ── */
+    #duck-container {
+      position: fixed;
+      bottom: 20%;
+      left: 5%;
+      z-index: 1500;
+      display: none;
+      animation: duckWalkIn 2s ease-out forwards;
+    }
+
+    @keyframes duckWalkIn {
+      0% {
+        left: -100px;
+        opacity: 0;
+      }
+      20% {
+        opacity: 1;
+      }
+      80% {
+        opacity: 1;
+      }
+      100% {
+        left: 80%;
+        opacity: 0;
+      }
+    }
+
+    .duck-emoji {
+      font-size: 120px;
+      animation: duckBob 0.6s ease-in-out infinite;
+    }
+
+    .duck-text {
+      position: absolute;
+      bottom: -60px;
+      left: 20px;
+      font-size: 28px;
+      color: #ff6b6b;
+      font-weight: 700;
+      text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+      white-space: nowrap;
+    }
+
+    @keyframes duckBob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+
+    /* ── FIREWORKS ── */
+    #fireworks-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1500;
+      pointer-events: none;
+      display: none;
+    }
+
+    .firework {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    /* ── WICKET CELEBRATION ── */
+    #wicket-container {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      z-index: 1500;
+      transform: translate(-50%, -50%);
+      display: none;
+      opacity: 0;
+      animation: wicketPop 3s ease-out forwards;
+    }
+
+    @keyframes wicketPop {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0);
+        rotation: 0deg;
+      }
+      20% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.2);
+        rotation: 360deg;
+      }
+      80% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+        rotation: 360deg;
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+        rotation: 720deg;
+      }
+    }
+
+    .wicket-text {
+      font-size: 80px;
+      font-weight: 700;
+      color: rgba(255, 50, 50, 0.9);
+      text-shadow: 0 0 30px rgba(255, 50, 50, 0.6);
+      font-family: 'Barlow Condensed', sans-serif;
+      letter-spacing: 2px;
+    }
+
+    /* ── FOUR/SIX CELEBRATION ── */
+    #boundary-container {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      z-index: 1500;
+      transform: translate(-50%, -50%);
+      display: none;
+      opacity: 0;
+      animation: boundaryBurst 2.5s ease-out forwards;
+    }
+
+    @keyframes boundaryBurst {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+      }
+      30% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.3);
+      }
+      70% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1);
+      }
+    }
+
+    .boundary-text {
+      font-size: 100px;
+      font-weight: 700;
+      background: linear-gradient(45deg, #ff6b6b, #ffd93d, #ff6b6b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 0 40px rgba(255, 200, 60, 0.6);
+      font-family: 'Barlow Condensed', sans-serif;
+      letter-spacing: 3px;
+    }
+
+    /* ── TEST BUTTONS ── */
+    #test-controls {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 3000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 200, 60, 0.5);
+    }
+
+    .test-btn {
+      background: linear-gradient(135deg, #ff1a4e, #c4002e);
+      color: #fff;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+      font-family: 'Rajdhani', sans-serif;
+    }
+
+    .test-btn:hover {
+      transform: scale(1.05);
+    }
+
+    .test-btn.secondary {
+      background: linear-gradient(135deg, #4D96FF, #2E5A8C);
+    }
   </style>
 </head>
 <body>
   <div id="logo-container">
     <img src="/logos/JL_Logo.JPG" alt="JL Logo" />
   </div>
+
+  <!-- Fullcard Scorecard -->
+  <div id="fullcard-container">
+    <div class="fullcard-header">LIVE SCORECARD</div>
+    <div class="fullcard-teams">
+      <div class="team-scorecard">
+        <h3 id="fullcard-team1">Team 1</h3>
+        <div class="stat">
+          <span class="label">Runs:</span>
+          <span class="value" id="fullcard-score1">-</span>
+        </div>
+        <div class="stat">
+          <span class="label">Wickets:</span>
+          <span class="value" id="fullcard-wkts1">-</span>
+        </div>
+        <div class="stat">
+          <span class="label">Overs:</span>
+          <span class="value" id="fullcard-overs1">-</span>
+        </div>
+        <div class="stat">
+          <span class="label">CRR:</span>
+          <span class="value" id="fullcard-crr1">-</span>
+        </div>
+      </div>
+      <div class="team-scorecard">
+        <h3 id="fullcard-team2">Team 2</h3>
+        <div class="stat">
+          <span class="label">Runs:</span>
+          <span class="value" id="fullcard-score2">-</span>
+        </div>
+        <div class="stat">
+          <span class="label">Wickets:</span>
+          <span class="value" id="fullcard-wkts2">-</span>
+        </div>
+        <div class="stat">
+          <span class="label">Overs:</span>
+          <span class="value" id="fullcard-overs2">-</span>
+        </div>
+        <div class="stat">
+          <span class="label">CRR:</span>
+          <span class="value" id="fullcard-crr2">-</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Duck Animation -->
+  <div id="duck-container">
+    <div class="duck-emoji">🦆</div>
+    <div class="duck-text">DUCK! 😢</div>
+  </div>
+
+  <!-- Fireworks Container -->
+  <div id="fireworks-container"></div>
+
+  <!-- Wicket Celebration -->
+  <div id="wicket-container">
+    <div class="wicket-text">WICKET!</div>
+  </div>
+
+  <!-- Boundary Celebration -->
+  <div id="boundary-container">
+    <div class="boundary-text">🔥 FOUR/SIX 🔥</div>
+  </div>
+
+  <!-- Test Controls (LOCAL TESTING ONLY) -->
+  <div id="test-controls">
+    <div style="color: rgba(255, 200, 60, 0.9); font-size: 11px; font-weight: 600; margin-bottom: 5px;">TEST CONTROLS</div>
+    <button class="test-btn secondary" onclick="showFullcard(mockScore)">Show Fullcard</button>
+    <button class="test-btn" onclick="showDuck()">Duck 🦆</button>
+    <button class="test-btn secondary" onclick="showBoundary(false)">Four 🔥</button>
+    <button class="test-btn secondary" onclick="showBoundary(true)">Six 🔥</button>
+    <button class="test-btn" onclick="showWicket()">Wicket 🎯</button>
+  </div>
+
+  <script>
+    let prevState = {};
+    let fullcardTimeout = null;
+    let prevOverCount = 0;
+
+    // Mock score data for testing
+    const mockScore = {
+      team1: 'Jersey Lions',
+      team2: 'USACA Eagles',
+      team1Logo: '/logos/JerseyLions.png',
+      team2Logo: '/logos/USACA.png',
+      score1: 156,
+      wkts1: 4,
+      overs1: 18.2,
+      score2: 142,
+      wkts2: 6,
+      overs2: 16.5,
+      bat1: 'John Smith',
+      bat1r: 45,
+      bat1b: 38,
+      bat1sr: 118.42,
+      bat2: 'Rohit Sharma',
+      bat2r: 32,
+      bat2b: 28,
+      bat2sr: 114.28,
+      bowler: 'James Anderson',
+      bowlerO: 3,
+      bowlerW: 1,
+      bowlerR: 24,
+      bowlerEco: 8.0,
+      crr: 8.6,
+      rrr: 9.2,
+      status: 'Live',
+      thisOver: ['1', 'W', '0', '4'],
+      lastUpdated: new Date().toISOString()
+    };
+
+    // Fetch score data
+    async function fetchScore() {
+      try {
+        const response = await fetch('/score');
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.log('Using mock data for testing');
+        return mockScore;
+      }
+    }
+
+    // Show fullcard every 2 overs
+    function checkAndShowFullcard(currentScore) {
+      if (!currentScore.overs1) return;
+
+      const [overs, balls] = currentScore.overs1.toString().split('.').map(Number);
+      const currentOverCount = overs || 0;
+
+      // Trigger on every 2-over completion
+      if (currentOverCount > 0 && currentOverCount % 2 === 0 && currentOverCount !== prevOverCount) {
+        showFullcard(currentScore);
+        prevOverCount = currentOverCount;
+      }
+    }
+
+    function showFullcard(score) {
+      clearTimeout(fullcardTimeout);
+
+      // Update fullcard with score data
+      document.getElementById('fullcard-team1').textContent = score.team1 || 'Team 1';
+      document.getElementById('fullcard-score1').textContent = score.score1 || '-';
+      document.getElementById('fullcard-wkts1').textContent = score.wkts1 || '-';
+      document.getElementById('fullcard-overs1').textContent = score.overs1 || '-';
+      document.getElementById('fullcard-crr1').textContent = score.crr ? score.crr.toFixed(2) : '-';
+
+      document.getElementById('fullcard-team2').textContent = score.team2 || 'Team 2';
+      document.getElementById('fullcard-score2').textContent = score.score2 || '-';
+      document.getElementById('fullcard-wkts2').textContent = score.wkts2 || '-';
+      document.getElementById('fullcard-overs2').textContent = score.overs2 || '-';
+      document.getElementById('fullcard-crr2').textContent = score.rrr ? score.rrr.toFixed(2) : '-';
+
+      // Show fullcard
+      const container = document.getElementById('fullcard-container');
+      container.classList.add('show');
+
+      // Hide after 8 seconds
+      fullcardTimeout = setTimeout(() => {
+        container.classList.remove('show');
+      }, 8000);
+    }
+
+    // Detect duck (batsman out for 0)
+    function checkDuck(currentScore) {
+      if (!prevState.bat1r && currentScore.bat1r === 0 && currentScore.bat1 && prevState.bat1 !== currentScore.bat1) {
+        showDuck();
+      }
+    }
+
+    function showDuck() {
+      const container = document.getElementById('duck-container');
+      container.style.display = 'block';
+      container.style.animation = 'none';
+      // Trigger reflow to restart animation
+      setTimeout(() => {
+        container.style.animation = 'duckWalkIn 2s ease-out forwards';
+      }, 10);
+      setTimeout(() => {
+        container.style.display = 'none';
+      }, 2000);
+    }
+
+    // Detect boundary (4 or 6)
+    function checkBoundary(currentScore) {
+      const prevRuns = prevState.bat1r || 0;
+      const currentRuns = currentScore.bat1r || 0;
+      const ballDiff = (currentScore.bat1b || 0) - (prevState.bat1b || 0);
+
+      if (ballDiff === 1 && (currentRuns - prevRuns === 4 || currentRuns - prevRuns === 6)) {
+        const runDiff = currentRuns - prevRuns;
+        showBoundary(runDiff === 6);
+      }
+    }
+
+    function showBoundary(isSix) {
+      const container = document.getElementById('boundary-container');
+      document.querySelector('.boundary-text').textContent = isSix ? '🔥 SIX! 🔥' : '🔥 FOUR! 🔥';
+      container.style.display = 'block';
+      container.style.animation = 'none';
+      setTimeout(() => {
+        container.style.animation = 'boundaryBurst 2.5s ease-out forwards';
+      }, 10);
+      setTimeout(() => {
+        container.style.display = 'none';
+      }, 2500);
+      
+      createFireworks();
+    }
+
+    // Detect wicket
+    function checkWicket(currentScore) {
+      const prevWkts = prevState.wkts1 || 0;
+      const currentWkts = currentScore.wkts1 || 0;
+
+      if (currentWkts > prevWkts) {
+        showWicket();
+      }
+    }
+
+    function showWicket() {
+      const container = document.getElementById('wicket-container');
+      container.style.display = 'block';
+      container.style.animation = 'none';
+      setTimeout(() => {
+        container.style.animation = 'wicketPop 3s ease-out forwards';
+      }, 10);
+      setTimeout(() => {
+        container.style.display = 'none';
+      }, 3000);
+    }
+
+    // Create fireworks effect
+    function createFireworks() {
+      const container = document.getElementById('fireworks-container');
+      container.innerHTML = '';
+      container.style.display = 'block';
+
+      const colors = ['#FF6B6B', '#FFD93D', '#6BCB77', '#4D96FF', '#FF6BA6'];
+      const particleCount = 30;
+
+      for (let i = 0; i < particleCount; i++) {
+        const firework = document.createElement('div');
+        firework.className = 'firework';
+        firework.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        firework.style.left = '50%';
+        firework.style.top = '50%';
+        container.appendChild(firework);
+
+        const angle = (Math.PI * 2 * i) / particleCount;
+        const velocity = 3 + Math.random() * 8;
+        const vx = Math.cos(angle) * velocity;
+        const vy = Math.sin(angle) * velocity;
+
+        animateFirework(firework, vx, vy);
+      }
+
+      setTimeout(() => {
+        container.style.display = 'none';
+      }, 2000);
+    }
+
+    function animateFirework(element, vx, vy) {
+      let x = 0;
+      let y = 0;
+      let gravity = 0.15;
+      let duration = 1500;
+      let startTime = Date.now();
+
+      function update() {
+        const elapsed = Date.now() - startTime;
+        if (elapsed > duration) return;
+
+        x += vx;
+        y += vy;
+        vy += gravity;
+
+        element.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+        element.style.opacity = 1 - elapsed / duration;
+
+        requestAnimationFrame(update);
+      }
+
+      update();
+    }
+
+    // Main update loop
+    async function updateOverlay() {
+      const currentScore = await fetchScore();
+      if (!currentScore) return;
+
+      // Check events
+      checkAndShowFullcard(currentScore);
+      checkDuck(currentScore);
+      checkBoundary(currentScore);
+      checkWicket(currentScore);
+
+      // Update state
+      prevState = JSON.parse(JSON.stringify(currentScore));
+    }
+
+    // Poll for updates every 5 seconds
+    setInterval(updateOverlay, 5000);
+    updateOverlay();
+  </script>
 </body>
 </html>

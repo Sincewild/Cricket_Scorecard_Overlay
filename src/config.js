@@ -20,6 +20,7 @@ const config = {
   chromiumExecutablePath: CHROMIUM_EXECUTABLE_PATH,
   staticDir: path.join(__dirname, '..', 'public'),
   logosDir: path.join(__dirname, 'logos'),
+  animationDir: path.join(__dirname, 'animation'),
   chromiumArgs: process.env.NODE_ENV === 'production' ? [
     '--no-sandbox',
     '--disable-setuid-sandbox',

@@ -39,6 +39,9 @@ function createApp(options) {
   if (options.logosDir) {
     app.use('/logos', express.static(options.logosDir));
   }
+  if (options.animationDir) {
+    app.use('/animation', express.static(options.animationDir));
+  }
 
   app.get('/score', (req, res) => {
     res.json(scoreService.getScore());
