@@ -44,6 +44,19 @@ jobs:
       packages: read
 
     steps:
+      - name: Wait for SSH to be available
+        run: |
+          for i in $(seq 1 5); do
+            if nc -zw 10 "${{ secrets.VPS_HOST }}" "${{ secrets.VPS_PORT }}"; then
+              echo "SSH port is open (attempt $i)"
+              exit 0
+            fi
+            echo "Attempt $i: SSH not yet available, retrying in 20s..."
+            sleep 20
+          done
+          echo "SSH port did not become available after 5 attempts"
+          exit 1
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         env:
@@ -54,6 +67,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
+          timeout: 60s
           command_timeout: 15m
           debug: true
           script: |
