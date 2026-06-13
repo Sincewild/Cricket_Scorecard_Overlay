@@ -44,6 +44,13 @@ jobs:
       packages: read
 
     steps:
+      - name: Get runner public IP
+        id: runner_ip
+        run: echo "ip=$(curl -fsS https://api.ipify.org)" >> "$GITHUB_OUTPUT"
+
+      - name: Show runner IP
+        run: echo "Runner IP: ${{ steps.runner_ip.outputs.ip }}"
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         env:
