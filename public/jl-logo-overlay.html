@@ -358,6 +358,7 @@
 
   <script>
     let prevState = {};
+    let hasBaselineState = false;
     let fullcardTimeout = null;
     let prevOverCount = 0;
 
@@ -462,8 +463,8 @@
 
     // Detect wicket
     function checkWicket(currentScore) {
-      const prevWkts = prevState.wkts1 || 0;
-      const currentWkts = currentScore.wkts1 || 0;
+      const prevWkts = Number(prevState.wkts1) || 0;
+      const currentWkts = Number(currentScore.wkts1) || 0;
 
       if (currentWkts > prevWkts) {
         showWicket();
@@ -540,6 +541,12 @@
     async function updateOverlay() {
       const currentScore = await fetchScore();
       if (!currentScore) return;
+
+      if (!hasBaselineState) {
+        prevState = JSON.parse(JSON.stringify(currentScore));
+        hasBaselineState = true;
+        return;
+      }
 
       // Check events
       checkAndShowFullcard(currentScore);
