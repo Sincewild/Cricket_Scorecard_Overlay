@@ -42,7 +42,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 
 # Download playwright's exact matching Chromium binary (148.x for playwright-core 1.60)
-RUN node node_modules/.bin/playwright install chromium
+RUN node node_modules/playwright-core/cli.js install chromium
 
 COPY src/ ./src/
 COPY public/ ./public/
