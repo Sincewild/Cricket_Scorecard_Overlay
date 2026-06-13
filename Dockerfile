@@ -10,14 +10,39 @@ FROM node:20-slim AS runtime
 ENV NODE_ENV=production
 ENV PLAYWRIGHT_BROWSERS_PATH=/root/.cache/ms-playwright
 
+# Install Chromium system deps (Debian Bookworm package names)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libglib2.0-0 \
+    libnss3 \
+    libnspr4 \
+    libdbus-1-3 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libxcb1 \
+    libxkbcommon0 \
+    libx11-6 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxext6 \
+    libxfixes3 \
+    libxrandr2 \
+    libgbm1 \
+    libpango-1.0-0 \
+    libcairo2 \
+    libasound2 \
+    libatspi2.0-0 \
+    fonts-liberation \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
 
-# Install playwright's exact matching Chromium + all system deps it needs.
-# This must run after node_modules are present so the playwright CLI is available.
-RUN node node_modules/.bin/playwright install --with-deps chromium \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+# Download playwright's exact matching Chromium binary (148.x for playwright-core 1.60)
+RUN node node_modules/.bin/playwright install chromium
 
 COPY src/ ./src/
 COPY public/ ./public/
