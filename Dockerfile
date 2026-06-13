@@ -2,27 +2,23 @@ FROM node:20-slim AS deps
 
 WORKDIR /app
 
-# Install only production dependencies and strip npm cache.
 COPY package*.json ./
 RUN npm ci --omit=dev --no-audit --fund=false && npm cache clean --force
 
 FROM node:20-slim AS runtime
 
-# Install Chromium from apt — no network download during build, all deps pulled automatically.
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    chromium \
-    fonts-liberation \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
 ENV NODE_ENV=production
-# Tell Playwright not to download its own browser; use the system Chromium instead.
-ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
-ENV CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium
+ENV PLAYWRIGHT_BROWSERS_PATH=/root/.cache/ms-playwright
 
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
+
+# Install playwright's exact matching Chromium + all system deps it needs.
+# This must run after node_modules are present so the playwright CLI is available.
+RUN node node_modules/.bin/playwright install --with-deps chromium \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
 COPY src/ ./src/
 COPY public/ ./public/
 
