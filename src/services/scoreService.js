@@ -1,6 +1,30 @@
 const { createInitialScoreState } = require('../state');
 const { createTeamLogoResolver } = require('../utils/teamLogoResolver');
 
+function toPublicErrorMessage(error) {
+  const message = String(error && error.message ? error.message : error || '').toLowerCase();
+
+  if (!message) {
+    return 'Score source temporarily unavailable. Retrying...';
+  }
+
+  if (message.includes('no match url set')) {
+    return 'No match URL set. Use /set-match to start scraping.';
+  }
+
+  if (
+    message.includes('security challenge') ||
+    message.includes('cloudflare') ||
+    message.includes('timeout') ||
+    message.includes('navigation') ||
+    message.includes('net::err_')
+  ) {
+    return 'Score source temporarily unavailable. Retrying...';
+  }
+
+  return 'Unable to refresh score right now. Retrying...';
+}
+
 class ScoreService {
   constructor(options) {
     this.scraper = options.scraper;
@@ -10,6 +34,7 @@ class ScoreService {
     this.logoResolver = createTeamLogoResolver({ logosDir: options.logosDir });
     this.scoreCache = createInitialScoreState();
     this.scrapeTimer = null;
+    this.lastInternalError = null;
     this.prevThisOverLength = 0;  // Track previous over's ball count
     this.postOverTimeoutId = null;  // Track timeout for reverting to normal interval
   }
@@ -20,6 +45,12 @@ class ScoreService {
 
   isScraping() {
     return Boolean(this.scrapeTimer);
+  }
+
+  setScrapeError(error) {
+    this.lastInternalError = error && error.message ? error.message : String(error || 'Unknown scrape error');
+    this.scoreCache.error = toPublicErrorMessage(error);
+    this.scoreCache.lastUpdated = new Date().toISOString();
   }
 
   updateInterval(newIntervalMs, durationMs = null) {
@@ -42,8 +73,7 @@ class ScoreService {
     if (matchUrl) {
       this.scrapeTimer = setInterval(() => {
         this.scrapeOnce(matchUrl).catch((error) => {
-          this.scoreCache.error = error.message;
-          this.scoreCache.lastUpdated = new Date().toISOString();
+          this.setScrapeError(error);
         });
       }, this.currentIntervalMs);
     }
@@ -66,20 +96,24 @@ class ScoreService {
       this.scrapeTimer = null;
     }
 
-    await this.scrapeOnce(matchUrl);
+    try {
+      await this.scrapeOnce(matchUrl);
+    } catch (error) {
+      this.setScrapeError(error);
+      throw new Error(this.scoreCache.error);
+    }
 
     this.currentIntervalMs = this.normalIntervalMs;
     this.scrapeTimer = setInterval(() => {
       this.scrapeOnce(matchUrl).catch((error) => {
-        this.scoreCache.error = error.message;
-        this.scoreCache.lastUpdated = new Date().toISOString();
+        this.setScrapeError(error);
       });
     }, this.currentIntervalMs);
   }
 
   async scrapeOnce(matchUrl) {
     if (!matchUrl) {
-      this.scoreCache.error = 'No match URL set. Use /set-match?url=YOUR_CRICCLUBS_URL';
+      this.scoreCache.error = 'No match URL set. Use /set-match to start scraping.';
       this.scoreCache.lastUpdated = new Date().toISOString();
       return;
     }
@@ -127,6 +161,7 @@ class ScoreService {
       lastUpdated: new Date().toISOString(),
       matchUrl
     };
+    this.lastInternalError = null;
   }
 
   stop() {

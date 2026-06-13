@@ -9,6 +9,8 @@ async function main() {
     executablePath: config.chromiumExecutablePath,
     timeoutMs: config.scrapeTimeoutMs,
     waitAfterLoadMs: config.waitAfterLoadMs,
+    challengeRetries: config.challengeRetries,
+    challengeRetryDelayMs: config.challengeRetryDelayMs,
     proxyUrl: config.proxyUrl
   });
 

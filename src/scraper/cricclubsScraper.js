@@ -15,6 +15,16 @@ function isSecurityChallengePage(text) {
   );
 }
 
+function isRetryableScrapeError(error) {
+  const message = String(error && error.message ? error.message : '').toLowerCase();
+  return (
+    message.includes('security challenge') ||
+    message.includes('timeout') ||
+    message.includes('net::err_') ||
+    message.includes('navigation')
+  );
+}
+
 class CricClubsScraper {
   constructor(options = {}) {
     this.browser = null;
@@ -23,6 +33,8 @@ class CricClubsScraper {
     this.timeoutMs = options.timeoutMs || 30000;
     this.waitAfterLoadMs = options.waitAfterLoadMs || 3000;
     this.proxyUrl = options.proxyUrl || null;
+    this.challengeRetries = Number.isInteger(options.challengeRetries) ? options.challengeRetries : 2;
+    this.challengeRetryDelayMs = options.challengeRetryDelayMs || 5000;
   }
 
   async start() {
@@ -81,7 +93,7 @@ class CricClubsScraper {
     throw lastError;
   }
 
-  async scrape(matchUrl) {
+  async scrapeOnce(matchUrl) {
     if (!this.browser) {
       throw new Error('Browser is not initialized');
     }
@@ -133,6 +145,27 @@ class CricClubsScraper {
     } finally {
       await context.close();
     }
+  }
+
+  async scrape(matchUrl) {
+    const totalAttempts = Math.max(1, this.challengeRetries + 1);
+    let lastError;
+
+    for (let attempt = 1; attempt <= totalAttempts; attempt += 1) {
+      try {
+        return await this.scrapeOnce(matchUrl);
+      } catch (error) {
+        lastError = error;
+        if (!isRetryableScrapeError(error) || attempt === totalAttempts) {
+          break;
+        }
+
+        const delayMs = this.challengeRetryDelayMs * attempt;
+        await sleep(delayMs);
+      }
+    }
+
+    throw lastError;
   }
 }
 

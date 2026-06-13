@@ -13,6 +13,8 @@ function createTeamLogoResolver(options) {
 
   // Explicit aliases for known teams.
   const aliasMap = {
+    'hrcc': 'HRCC-logo.jpeg',
+    'hrcclogo': 'HRCC-logo.jpeg',
     'jerseylions': 'JerseyLions.png',
     'usaca': 'USACA.png',
     'ucc': 'ucc.jpg'

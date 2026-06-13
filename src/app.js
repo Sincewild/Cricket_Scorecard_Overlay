@@ -5,6 +5,26 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 const { validateMatchUrl } = require('./utils/validateMatchUrl');
 
+function toPublicSetMatchError(error) {
+  const message = String(error && error.message ? error.message : error || '').toLowerCase();
+
+  if (
+    message.includes('security challenge') ||
+    message.includes('cloudflare') ||
+    message.includes('timeout') ||
+    message.includes('navigation') ||
+    message.includes('net::err_')
+  ) {
+    return 'Score source is temporarily unavailable. Please retry in a moment.';
+  }
+
+  if (message.includes('no match url set')) {
+    return 'No match URL set. Provide a valid URL or matchId/clubId.';
+  }
+
+  return 'Unable to start scraping right now. Please retry shortly.';
+}
+
 function createApp(options) {
   const app = express();
   const scoreService = options.scoreService;
@@ -69,7 +89,7 @@ function createApp(options) {
       await scoreService.start(validation.url);
       return res.json({ success: true, message: 'Scraping started', url: validation.url });
     } catch (error) {
-      return res.status(500).json({ success: false, error: error.message });
+      return res.status(500).json({ success: false, error: toPublicSetMatchError(error) });
     }
   });
 

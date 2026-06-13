@@ -6,6 +6,8 @@ const POST_OVER_INTERVAL_MS = Number.parseInt(process.env.POST_OVER_INTERVAL_MS 
 const MATCH_URL = process.env.MATCH_URL || null;
 const SCRAPE_TIMEOUT_MS = Number.parseInt(process.env.SCRAPE_TIMEOUT_MS || '60000', 10);
 const WAIT_AFTER_LOAD_MS = Number.parseInt(process.env.WAIT_AFTER_LOAD_MS || '8000', 10);
+const CHALLENGE_RETRIES = Number.parseInt(process.env.CHALLENGE_RETRIES || '2', 10);
+const CHALLENGE_RETRY_DELAY_MS = Number.parseInt(process.env.CHALLENGE_RETRY_DELAY_MS || '5000', 10);
 const PROXY_URL = process.env.PROXY_URL || null;
 const CHROMIUM_EXECUTABLE_PATH = process.env.CHROMIUM_EXECUTABLE_PATH || null;
 
@@ -16,6 +18,8 @@ const config = {
   matchUrl: MATCH_URL,
   scrapeTimeoutMs: Number.isFinite(SCRAPE_TIMEOUT_MS) ? SCRAPE_TIMEOUT_MS : 60000,
   waitAfterLoadMs: Number.isFinite(WAIT_AFTER_LOAD_MS) ? WAIT_AFTER_LOAD_MS : 8000,
+  challengeRetries: Number.isFinite(CHALLENGE_RETRIES) ? CHALLENGE_RETRIES : 2,
+  challengeRetryDelayMs: Number.isFinite(CHALLENGE_RETRY_DELAY_MS) ? CHALLENGE_RETRY_DELAY_MS : 5000,
   proxyUrl: PROXY_URL,
   chromiumExecutablePath: CHROMIUM_EXECUTABLE_PATH,
   staticDir: path.join(__dirname, '..', 'public'),
