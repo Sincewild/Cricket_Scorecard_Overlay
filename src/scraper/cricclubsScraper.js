@@ -1,5 +1,20 @@
 const { parseScore } = require('./parseScore');
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isSecurityChallengePage(text) {
+  const body = String(text || '').toLowerCase();
+  return (
+    body.includes('cloudflare') ||
+    body.includes('checking your browser') ||
+    body.includes('performing security') ||
+    body.includes('security verification') ||
+    body.includes('attention required')
+  );
+}
+
 class CricClubsScraper {
   constructor(options = {}) {
     this.browser = null;
@@ -46,6 +61,26 @@ class CricClubsScraper {
     return Boolean(this.browser);
   }
 
+  async gotoWithFallback(page, url) {
+    const attempts = [
+      { waitUntil: 'domcontentloaded', timeout: Math.min(this.timeoutMs, 30000) },
+      { waitUntil: 'load', timeout: this.timeoutMs },
+      { waitUntil: 'commit', timeout: this.timeoutMs }
+    ];
+
+    let lastError;
+    for (const attempt of attempts) {
+      try {
+        await page.goto(url, attempt);
+        return;
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    throw lastError;
+  }
+
   async scrape(matchUrl) {
     if (!this.browser) {
       throw new Error('Browser is not initialized');
@@ -72,21 +107,27 @@ class CricClubsScraper {
       await page.route('**/analytics**', (route) => route.abort());
       await page.route('**/google-analytics**', (route) => route.abort());
 
-      await page.goto(matchUrl, {
-        waitUntil: 'networkidle',
-        timeout: this.timeoutMs
-      });
+      await this.gotoWithFallback(page, matchUrl);
+
+      await page.waitForSelector('body', {
+        timeout: Math.min(this.timeoutMs, 10000)
+      }).catch(() => {});
 
       // Extra wait for Cloudflare JS challenge to complete
-      await new Promise(r => setTimeout(r, this.waitAfterLoadMs));
+      await sleep(this.waitAfterLoadMs);
 
       // If still on Cloudflare challenge, wait longer
       const bodyText = await page.evaluate(() => document.body.innerText);
-      if (bodyText.includes('security verification') || bodyText.includes('Performing security')) {
-        await new Promise(r => setTimeout(r, 8000));
+      if (isSecurityChallengePage(bodyText)) {
+        await sleep(8000);
       }
 
       const fullText = await page.evaluate(() => document.body.innerText);
+
+      if (isSecurityChallengePage(fullText)) {
+        throw new Error('CricClubs blocked the scraper with a security challenge. Set PROXY_URL to a clean residential/static proxy and retry /set-match.');
+      }
+
       this.lastRawText = fullText;
       return parseScore(fullText);
     } finally {

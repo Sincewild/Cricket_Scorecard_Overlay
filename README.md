@@ -219,6 +219,9 @@ npm run pm2:start
 - Score not updating:
   - Re-call `/set-match` with a valid CricClubs match URL.
   - Confirm `lastUpdated` changes in `/score`.
+  - If you see `page.goto timeout` or a security verification error, CricClubs likely presented an anti-bot challenge.
+  - Set `PROXY_URL` in `.env` to a clean static/residential proxy and redeploy.
+  - Increase `SCRAPE_TIMEOUT_MS` to `90000` if your VPS network is slow.
 - Invalid URL error:
   - Ensure URL is from a CricClubs domain and properly encoded.
   - Or use the `?matchId=&clubId=` shorthand to avoid encoding issues.
