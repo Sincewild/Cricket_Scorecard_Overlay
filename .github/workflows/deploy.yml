@@ -50,17 +50,28 @@ jobs:
       packages: read
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Deploy locally on VPS
         env:
           DOCKER_CLIENT_TIMEOUT: 300
           COMPOSE_HTTP_TIMEOUT: 300
+          APP_DIR: /var/www/Cricket_Scorecard_Overlay
         run: |
           set -e
           export DOCKER_CLIENT_TIMEOUT=300
           export COMPOSE_HTTP_TIMEOUT=300
+
+          if [ ! -d "$APP_DIR" ]; then
+            echo "Deployment directory not found: $APP_DIR"
+            exit 1
+          fi
+
+          cd "$APP_DIR"
+
+          if [ ! -f .env ]; then
+            echo ".env not found in $APP_DIR"
+            echo "Create it once from .env.example before running CI deploy."
+            exit 1
+          fi
 
           echo "--- Pulling Docker image ---"
           for i in {1..3}; do
