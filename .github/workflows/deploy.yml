@@ -44,10 +44,7 @@ jobs:
   deploy:
     name: Deploy on VPS (Self-Hosted Runner)
     needs: build
-    runs-on:
-      - self-hosted
-      - linux
-      - x64
+    runs-on: self-hosted
     permissions:
       contents: read
       packages: read
