@@ -167,6 +167,31 @@ docker-compose up -d
 
 Nginx and Traefik configs are in `nginx/` and `traefik/` respectively. Setup script at `scripts/setup-vps.sh`.
 
+### GitHub Actions Deploy from VPS (Recommended)
+
+If your VPS provider blocks GitHub-hosted runner IPs, deploy with a self-hosted GitHub Actions runner installed on the VPS.
+
+1. In GitHub, go to repository settings and create a Linux self-hosted runner.
+2. On the VPS, install and start the runner service:
+
+```bash
+cd /opt
+sudo mkdir -p actions-runner && sudo chown "$USER":"$USER" actions-runner
+cd actions-runner
+curl -o actions-runner-linux-x64.tar.gz -L https://github.com/actions/runner/releases/latest/download/actions-runner-linux-x64.tar.gz
+tar xzf actions-runner-linux-x64.tar.gz
+
+# Use the registration URL/token shown in GitHub UI
+./config.sh --url https://github.com/sincewild/Cricket_Scorecard_Overlay --token YOUR_TOKEN --labels self-hosted,linux,x64
+sudo ./svc.sh install
+sudo ./svc.sh start
+```
+
+3. Ensure Docker/Compose is available for the runner user and that the repo exists on the VPS in the deployment directory.
+4. Push to `main` (or run the workflow manually) and verify the `Deploy on VPS (Self-Hosted Runner)` job picks your VPS runner.
+
+This avoids SSH ingress from random GitHub runner IPs entirely.
+
 ### VPS with PM2
 
 ```bash
