@@ -60,7 +60,7 @@ function parseScore(text) {
       }
     }
 
-    const vsScoreReg = /\n([\w][\w A-Za-z0-9&'.\-]{1,40})\n(\d{1,3})\/(\d{1,2})\n[\s\n]*(\d+\.\d+)[^\n]*?(?:ov|Overs)?[\s\n]*VS\n([\w][\w A-Za-z0-9&'.\-]{1,40})\n(\d{1,3})\/(\d{1,2})\n[\s\n]*(\d+\.\d+)/;
+    const vsScoreReg = /\n([\w][\w A-Za-z0-9&'.\-]{1,40})\n(\d{1,3})\/(\d{1,2})\n[\s\n]*(\d+\.\d+)[^\n]*?(?:ov|Overs)?[\s\n]*VS\n([\w][\w A-Za-z0-9&'.\-]{1,40})\n(\d{1,3})\/(\d{1,2})\n[\s\n]*([\d./]+)/;
     const vsMatch = text.match(vsScoreReg);
     if (vsMatch) {
       data.team1  = vsMatch[1].trim();
@@ -271,20 +271,29 @@ function parseScore(text) {
   // Old format ball-by-ball: "value over.ball" on same line
   if (data.thisOver.length === 0) {
     const allBallLines = [];
-    for (const line of text.split('\n')) {
-      const m = line.trim().match(/^(\S+)\s+(\d+)\.(\d+)\s*$|^(\d+)\.(\d+)\s*$/);
+    const rawLines = text.split('\n');
+    for (let i = 0; i < rawLines.length; i++) {
+      const m = rawLines[i].trim().match(/^(\S+)\s+(\d+)\.(\d+)\s*$|^(\d+)\.(\d+)\s*$/);
       if (m) {
-        if (m[4] !== undefined) {
-          allBallLines.push({ value: '0', over: parseInt(m[4]), ball: parseInt(m[5]) });
-        } else {
+        const hasPrefix = m[4] === undefined;
+        if (!hasPrefix) {
+          // Bare number line (no value prefix) — could be run rate. Require a delivery
+          // description ("to ") in the next 3 lines to confirm it's a real ball.
+          const nextLines = rawLines.slice(i + 1, i + 4).join(' ');
+          if (!nextLines.includes(' to ')) continue;
+        }
+        if (hasPrefix) {
           allBallLines.push({ value: m[1], over: parseInt(m[2]), ball: parseInt(m[3]) });
+        } else {
+          allBallLines.push({ value: '0', over: parseInt(m[4]), ball: parseInt(m[5]) });
         }
       }
     }
 
-    if (allBallLines.length > 0) {
-      const maxOver = Math.max(...allBallLines.map((b) => b.over));
-      const currentOverBalls = allBallLines
+    const validBallLines = allBallLines.filter(b => b.ball >= 1 && b.ball <= 8);
+    if (validBallLines.length > 0) {
+      const maxOver = Math.max(...validBallLines.map((b) => b.over));
+      const currentOverBalls = validBallLines
         .filter((b) => b.over === maxOver)
         .sort((a, b) => a.ball - b.ball)
         .map((b) => {
@@ -298,7 +307,7 @@ function parseScore(text) {
       if (currentOverBalls.length > 0) data.thisOver = currentOverBalls.slice(0, 8);
 
       if (data.runsNeeded && !data.overs2) {
-        const ballsInCurrentOver = allBallLines.filter((b) => b.over === maxOver).length;
+        const ballsInCurrentOver = validBallLines.filter((b) => b.over === maxOver).length;
         if (ballsInCurrentOver > 0 && maxOver > 0) {
           data.overs2 = `${maxOver}.${ballsInCurrentOver}`;
         } else if (maxOver > 1) {

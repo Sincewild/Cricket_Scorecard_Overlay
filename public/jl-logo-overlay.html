@@ -282,41 +282,7 @@
       letter-spacing: 3px;
     }
 
-    /* ── TEST BUTTONS ── */
-    #test-controls {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 3000;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      background: rgba(0, 0, 0, 0.8);
-      padding: 15px;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 200, 60, 0.5);
-    }
 
-    .test-btn {
-      background: linear-gradient(135deg, #ff1a4e, #c4002e);
-      color: #fff;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.2s;
-      font-family: 'Rajdhani', sans-serif;
-    }
-
-    .test-btn:hover {
-      transform: scale(1.05);
-    }
-
-    .test-btn.secondary {
-      background: linear-gradient(135deg, #4D96FF, #2E5A8C);
-    }
   </style>
 </head>
 <body>
@@ -388,52 +354,12 @@
     <div class="boundary-text">🔥 FOUR/SIX 🔥</div>
   </div>
 
-  <!-- Test Controls (LOCAL TESTING ONLY) -->
-  <div id="test-controls">
-    <div style="color: rgba(255, 200, 60, 0.9); font-size: 11px; font-weight: 600; margin-bottom: 5px;">TEST CONTROLS</div>
-    <button class="test-btn secondary" onclick="showFullcard(mockScore)">Show Fullcard</button>
-    <button class="test-btn" onclick="showDuck()">Duck 🦆</button>
-    <button class="test-btn secondary" onclick="showBoundary(false)">Four 🔥</button>
-    <button class="test-btn secondary" onclick="showBoundary(true)">Six 🔥</button>
-    <button class="test-btn" onclick="showWicket()">Wicket 🎯</button>
-  </div>
+
 
   <script>
     let prevState = {};
     let fullcardTimeout = null;
     let prevOverCount = 0;
-
-    // Mock score data for testing
-    const mockScore = {
-      team1: 'Jersey Lions',
-      team2: 'USACA Eagles',
-      team1Logo: '/logos/JerseyLions.png',
-      team2Logo: '/logos/USACA.png',
-      score1: 156,
-      wkts1: 4,
-      overs1: 18.2,
-      score2: 142,
-      wkts2: 6,
-      overs2: 16.5,
-      bat1: 'John Smith',
-      bat1r: 45,
-      bat1b: 38,
-      bat1sr: 118.42,
-      bat2: 'Rohit Sharma',
-      bat2r: 32,
-      bat2b: 28,
-      bat2sr: 114.28,
-      bowler: 'James Anderson',
-      bowlerO: 3,
-      bowlerW: 1,
-      bowlerR: 24,
-      bowlerEco: 8.0,
-      crr: 8.6,
-      rrr: 9.2,
-      status: 'Live',
-      thisOver: ['1', 'W', '0', '4'],
-      lastUpdated: new Date().toISOString()
-    };
 
     // Fetch score data
     async function fetchScore() {
@@ -442,8 +368,8 @@
         const data = await response.json();
         return data;
       } catch (error) {
-        console.log('Using mock data for testing');
-        return mockScore;
+        console.error('Failed to fetch score:', error);
+        throw error;
       }
     }
 

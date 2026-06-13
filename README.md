@@ -1,46 +1,55 @@
 # Cricket Live Overlay for YOLOBox Ultra
 
-Self-hosted CricClubs score overlay service designed for deployment on platforms like Render.
-The server scrapes live score text with Playwright and serves an HTML overlay plus a JSON API.
+Self-hosted CricClubs score overlay service. Scrapes live score text with Playwright and serves HTML overlays plus a JSON API.
 
 ## Project Goals
 
 - Broadcast-friendly scorebar for YOLOBox and browser sources.
+- Multiple overlay variants with team logos.
+- Duck animation when a batsman is dismissed for 0.
 - Simple API endpoints for operations (`/set-match`, `/score`, `/health`).
 - Safer-by-default deployment behavior:
-        - URL validation for match source.
-        - Basic hardening middleware (`helmet`, route rate limiting).
-        - Graceful shutdown and modular server structure.
+  - URL validation for match source.
+  - Basic hardening middleware (`helmet`, route rate limiting).
+  - Graceful shutdown and modular server structure.
 
 ## Architecture
 
 ```
 src/
-        app.js                     # Express app, middleware, routes
-        config.js                  # Environment-driven runtime settings
-        index.js                   # Process entrypoint and lifecycle
-        state.js                   # Initial score model
-        scraper/
-                cricclubsScraper.js      # Playwright browser + scraping logic
-                parseScore.js            # Heuristic parser for score text
-        services/
-                scoreService.js          # Polling scheduler + in-memory cache
-        utils/
-                validateMatchUrl.js      # Match URL validation and allowlist
+  app.js                     # Express app, middleware, routes
+  config.js                  # Environment-driven runtime settings
+  index.js                   # Process entrypoint and lifecycle
+  state.js                   # Initial score model
+  animation/
+    duck-alpha.webm          # Duck animation with alpha transparency (VP9/WebM)
+    duck-sample1-2.mp4       # Source duck video
+  logos/                     # Team logo image assets
+  scraper/
+    cricclubsScraper.js      # Playwright browser + scraping logic
+    parseScore.js            # Heuristic parser for score text
+  services/
+    scoreService.js          # Polling scheduler + in-memory cache
+  utils/
+    teamLogoResolver.js      # Resolves team name to logo path
+    validateMatchUrl.js      # Match URL validation and allowlist
 public/
-        overlay.html               # Overlay UI used by YOLOBox/browser
+  overlay.html               # Default overlay (no logo)
+  hrcc-logo-overlay.html     # HRCC team logo overlay variant
+  jl-logo-overlay.html       # Jersey Lions logo overlay variant
+  admin.html                 # Admin UI for setting match URL
 ```
 
 ## How Data Flows
 
 ```
 CricClubs scoring app
-        -> CricClubs website scorecard
-        -> Playwright scraper (every 30s, configurable)
-        -> In-memory cache
-        -> /score JSON endpoint
-        -> overlay.html polling UI
-        -> YOLOBox Web URL source
+  -> CricClubs website scorecard
+  -> Playwright scraper (every 30s, configurable)
+  -> In-memory cache
+  -> /score JSON endpoint
+  -> overlay.html polling UI
+  -> YOLOBox Web URL source
 ```
 
 ## Requirements
@@ -60,7 +69,7 @@ npm install
 2. Install Playwright browser:
 
 ```bash
-npm run install-browsers
+npm run setup:browser
 ```
 
 3. Start server:
@@ -69,26 +78,42 @@ npm run install-browsers
 npm start
 ```
 
-4. Set match URL:
+4. Set match URL (two options):
 
 ```bash
+# Full URL
 curl "http://localhost:3000/set-match?url=https://www.cricclubs.com/USCL/ballbyball.do?matchId=782&clubId=2153"
+
+# Shorthand with matchId + clubId
+curl "http://localhost:3000/set-match?matchId=782&clubId=2153"
 ```
 
 5. Open overlay in browser:
 
 ```
-http://localhost:3000/
+http://localhost:3000/             # default overlay
+http://localhost:3000/overlay      # same as above
+http://localhost:3000/admin        # admin UI to set match URL
 ```
 
 ## API Endpoints
 
 | Endpoint | Method | Purpose |
 | --- | --- | --- |
-| `/` | GET | Overlay UI |
+| `/` | GET | Default overlay UI |
+| `/overlay` | GET | Default overlay UI (alias) |
+| `/hrcc-logo-overlay.html` | GET | HRCC logo overlay variant |
+| `/jl-logo-overlay.html` | GET | Jersey Lions logo overlay variant |
+| `/admin` | GET | Admin UI for managing match |
 | `/score` | GET | Current parsed score JSON |
 | `/health` | GET | Service and scraper status |
 | `/set-match?url=...` | GET | Set CricClubs match URL and start polling |
+| `/set-match?matchId=...&clubId=...` | GET | Shorthand to set match by IDs |
+| `/unset-match` | GET | Clear current match and stop polling |
+| `/debug-scrape` | GET | Raw scraped text (supports `?offset=&limit=`) |
+| `/debug-batter` | GET | Raw text around the Batter header |
+| `/logos/*` | GET | Serve team logo images from `src/logos/` |
+| `/animation/*` | GET | Serve animation files from `src/animation/` |
 
 ## Environment Variables
 
@@ -98,7 +123,31 @@ http://localhost:3000/
 | `SCRAPE_INTERVAL_MS` | `30000` | Polling interval in milliseconds |
 | `MATCH_URL` | unset | Optional auto-start match URL |
 
-## Deployment on Render
+## Duck Animation
+
+When a batsman is dismissed for 0 runs, the overlay shows a duck animation.
+
+- Source: `src/animation/duck-sample1-2.mp4` (white background, 1280x720)
+- Served: `src/animation/duck-alpha.webm` — re-encoded VP9/WebM with alpha transparency via `colorkey` white removal
+- CSS: `mix-blend-mode: screen` removes the black background in overlays that can't use alpha
+
+## Scripts
+
+| Command | Purpose |
+| --- | --- |
+| `npm start` | Start production server |
+| `npm run dev` | Start server (same as start) |
+| `npm run setup:browser` | Install Playwright Chromium |
+| `npm run check` | Quick Node syntax check for entrypoint |
+| `npm run pm2:start` | Start with PM2 (production) |
+| `npm run pm2:stop` | Stop PM2 process |
+| `npm run pm2:restart` | Restart PM2 process |
+| `npm run pm2:logs` | View PM2 logs |
+| `npm run pm2:status` | Check PM2 process status |
+
+## Deployment
+
+### Render
 
 Use these commands (already reflected in `render.yaml`):
 
@@ -110,10 +159,24 @@ After deployment:
 1. Set match URL via `/set-match?url=...`
 2. Add `https://YOUR-SERVICE.onrender.com/` as Web URL overlay in YOLOBox
 
+### VPS with Docker
+
+```bash
+docker-compose up -d
+```
+
+Nginx and Traefik configs are in `nginx/` and `traefik/` respectively. Setup script at `scripts/setup-vps.sh`.
+
+### VPS with PM2
+
+```bash
+npm run pm2:start
+```
+
 ## Security and Safety Notes
 
 - `/set-match` only accepts `http`/`https` CricClubs URLs.
-- `/set-match` is rate-limited to reduce abuse.
+- `/set-match` is rate-limited to 20 requests/minute.
 - `helmet` headers are enabled with CSP relaxed for overlay compatibility.
 - Express `x-powered-by` header is disabled.
 
@@ -126,17 +189,14 @@ After deployment:
 ## Troubleshooting
 
 - Overlay stuck on loading:
-        - Check `/health`.
-        - Confirm the process is up and `browserRunning` is true.
+  - Check `/health`.
+  - Confirm the process is up and `browserRunning` is true.
 - Score not updating:
-        - Re-call `/set-match` with a valid CricClubs match URL.
-        - Confirm `lastUpdated` changes in `/score`.
+  - Re-call `/set-match` with a valid CricClubs match URL.
+  - Confirm `lastUpdated` changes in `/score`.
 - Invalid URL error:
-        - Ensure URL is from a CricClubs domain and properly encoded.
-
-## Scripts
-
-- `npm start` - start production server
-- `npm run dev` - start server (same as start)
-- `npm run install-browsers` - install Playwright Chromium
-- `npm run check` - quick Node syntax check for entrypoint
+  - Ensure URL is from a CricClubs domain and properly encoded.
+  - Or use the `?matchId=&clubId=` shorthand to avoid encoding issues.
+- Duck animation not playing:
+  - Confirm `src/animation/duck-alpha.webm` exists.
+  - Check browser console for video load errors.
