@@ -617,6 +617,109 @@
     from { transform: scale(0.95) rotate(0deg); opacity: 0.7; }
     to   { transform: scale(1.15) rotate(18deg); opacity: 1; }
   }
+
+  /* ── FULL SCORECARD (shown after each over) ── */
+  #fullscorecard-overlay {
+    display: none;
+    position: fixed;
+    top: 40px;
+    left: 40px;
+    right: 40px;
+    gap: 20px;
+    filter: drop-shadow(0 6px 32px rgba(0,0,0,0.75));
+    z-index: 40;
+  }
+
+  #fullscorecard-overlay.show {
+    display: flex;
+  }
+
+  #fullscorecard-overlay .innings-panel {
+    flex: 1;
+    background: linear-gradient(180deg, #152038 0%, #0e1828 100%);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-top: 2px solid rgba(255, 200, 60, 0.55);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  #fullscorecard-overlay .innings-header {
+    background: linear-gradient(135deg, #182444 0%, #253d65 60%, #1a2d50 100%);
+    color: #fff;
+    padding: 8px 14px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(255,200,60,0.3);
+  }
+
+  #fullscorecard-overlay .innings-header .vs {
+    color: rgba(255,200,60,0.85);
+    font-weight: 600;
+    margin-left: 6px;
+  }
+
+  #fullscorecard-overlay .section-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 9px;
+    color: rgba(255,200,60,0.6);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+    padding: 8px 14px 4px;
+  }
+
+  #fullscorecard-overlay table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  #fullscorecard-overlay th {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 9px;
+    color: rgba(255,200,60,0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    text-align: left;
+    padding: 2px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+
+  #fullscorecard-overlay th.num, #fullscorecard-overlay td.num { text-align: right; padding-right: 14px; }
+
+  #fullscorecard-overlay td {
+    color: #d8e0ee;
+    font-weight: 600;
+    padding: 3px 14px;
+    letter-spacing: 0.3px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  #fullscorecard-overlay td.name {
+    font-family: 'Rajdhani', sans-serif;
+    color: #fff;
+  }
+
+  #fullscorecard-overlay td.stat {
+    font-family: 'Barlow Condensed', sans-serif;
+    color: #7eb8f7;
+  }
+
+  #fullscorecard-overlay .empty-row td {
+    color: #445566;
+    font-style: italic;
+    text-align: center;
+  }
+
+  #fullscorecard-overlay td.dismissal {
+    font-family: 'Rajdhani', sans-serif;
+    color: #7a8aa0;
+    font-size: 11px;
+  }
 </style>
 </head>
 <body>
@@ -635,6 +738,8 @@
   <span class="result-banner-text" id="result-banner-text">Jersey Lions won by 62 Runs</span>
   <span class="result-spark right"></span>
 </div>
+
+<div id="fullscorecard-overlay"></div>
 
 <div id="scorebar">
   <div id="live-badge">
@@ -773,6 +878,96 @@
     return `<div class="ball ${cls}">${label}</div>`;
   }
 
+  // ── Full scorecard shown for FULLSCORECARD_DISPLAY_MS after each completed over ──
+  const FULLSCORECARD_DISPLAY_MS = 8000;
+  let prevBallsBowled = null;
+  let fullscorecardHideTimer = null;
+
+  function oversToBalls(oversStr) {
+    if (oversStr === null || oversStr === undefined || oversStr === '') return null;
+    const parts = String(oversStr).split('.');
+    const overs = parseInt(parts[0], 10) || 0;
+    const balls = parseInt(parts[1], 10) || 0;
+    return overs * 6 + balls;
+  }
+
+  function buildScorecardTable(rows, columns) {
+    const head = `<tr>${columns.map(c => `<th${c.num ? ' class="num"' : ''}>${c.label}</th>`).join('')}</tr>`;
+    let body;
+    if (!rows || rows.length === 0) {
+      body = `<tr class="empty-row"><td colspan="${columns.length}">No data yet</td></tr>`;
+    } else {
+      body = rows.map(row => `<tr>${columns.map((c, i) => {
+        const cls = c.cls || (i === 0 ? 'name' : (c.num ? 'num stat' : 'stat'));
+        return `<td class="${cls}">${row[c.key] ?? '—'}</td>`;
+      }).join('')}</tr>`).join('');
+    }
+    return `<table><thead>${head}</thead><tbody>${body}</tbody></table>`;
+  }
+
+  function buildScorecardInnings(innings, fallbackBattingTeam, fallbackBowlingTeam) {
+    if (!innings) {
+      innings = { battingTeam: fallbackBattingTeam, batting: [], bowlingTeam: fallbackBowlingTeam, bowling: [] };
+    }
+
+    const battingCols = [
+      { key: 'name', label: 'Batter' },
+      { key: 'dismissal', label: '', cls: 'dismissal' },
+      { key: 'runs', label: 'R', num: true },
+      { key: 'balls', label: 'B', num: true },
+      { key: 'fours', label: '4s', num: true },
+      { key: 'sixes', label: '6s', num: true },
+      { key: 'sr', label: 'SR', num: true }
+    ];
+
+    const bowlingCols = [
+      { key: 'name', label: 'Bowler' },
+      { key: 'overs', label: 'O', num: true },
+      { key: 'maidens', label: 'M', num: true },
+      { key: 'dots', label: 'Dot', num: true },
+      { key: 'runs', label: 'R', num: true },
+      { key: 'wkts', label: 'W', num: true },
+      { key: 'econ', label: 'Econ', num: true }
+    ];
+
+    return `
+      <div class="innings-panel">
+        <div class="innings-header">${innings.battingTeam || fallbackBattingTeam || 'Team'} <span class="vs">batting</span></div>
+        ${buildScorecardTable(innings.batting, battingCols)}
+        <div class="section-label">Bowling — ${innings.bowlingTeam || fallbackBowlingTeam || 'Team'}</div>
+        ${buildScorecardTable(innings.bowling, bowlingCols)}
+      </div>
+    `;
+  }
+
+  function showFullScorecard(data) {
+    const overlay = document.getElementById('fullscorecard-overlay');
+    const sc = data.scorecard || {};
+    overlay.innerHTML =
+      buildScorecardInnings(sc.innings1, data.team1, data.team2) +
+      buildScorecardInnings(sc.innings2, data.team2, data.team1);
+    overlay.classList.add('show');
+
+    if (fullscorecardHideTimer) clearTimeout(fullscorecardHideTimer);
+    fullscorecardHideTimer = setTimeout(() => {
+      overlay.classList.remove('show');
+    }, FULLSCORECARD_DISPLAY_MS);
+  }
+
+  function checkOverFinished(data) {
+    const isMatchOver = data.status && /\bwon by\b/i.test(data.status);
+    if (isMatchOver) return;
+
+    const liveOvers = (data.score2 !== null && data.score2 !== undefined) ? data.overs2 : data.overs1;
+    const balls = oversToBalls(liveOvers);
+    if (balls === null) return;
+
+    if (prevBallsBowled !== null && balls > prevBallsBowled && balls % 6 === 0) {
+      showFullScorecard(data);
+    }
+    prevBallsBowled = balls;
+  }
+
   function playDuckVideo() {
     const container = document.getElementById('duck-video-container');
     const video = document.getElementById('duck-video');
@@ -795,6 +990,8 @@
   }
 
   function updateUI(data) {
+    checkOverFinished(data);
+
     // Teams
     document.getElementById('team1-name').textContent = data.team1 || 'Team 1';
     document.getElementById('team2-name').textContent = data.team2 || 'Team 2';
@@ -888,8 +1085,9 @@
       const sr1 = data.bat1sr ? ` · SR ${data.bat1sr}` : '';
       document.getElementById('bat1-stat').textContent = `${data.bat1r} (${data.bat1b})${sr1}`;
 
-      // Duck detection: check if batter changed and previous batter scored 0
-      if (prevBat1Name && prevBat1Name !== data.bat1 && Number(prevBat1Runs) === 0) {
+      // Duck detection: previous on-strike batter left the crease entirely (not just
+      // strike rotation to bat2) while still on 0 runs — i.e. got out for a duck.
+      if (prevBat1Name && prevBat1Name !== data.bat1 && prevBat1Name !== data.bat2 && Number(prevBat1Runs) === 0) {
         playDuckVideo();
       }
 
