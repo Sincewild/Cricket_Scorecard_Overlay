@@ -9,10 +9,12 @@ function parseScore(text) {
     wkts2: null,
     overs2: null,
     bat1: null,
+    bat1Photo: null,
     bat1r: null,
     bat1b: null,
     bat1sr: null,
     bat2: null,
+    bat2Photo: null,
     bat2r: null,
     bat2b: null,
     bat2sr: null,
@@ -327,6 +329,72 @@ function parseScore(text) {
   return data;
 }
 
+// ── Full scorecard (batting + bowling card for one innings) ────────────────
+// Expects the innerText of the "Full Scorecard" tab, e.g.:
+//   Global Titans innings (20 overs maximum)\tR\tB\t4s\t6s\tSR
+//    Sanjay Bhaskaran\tc Chintan P b Pradhuman B\t20\t10\t3\t1\t200.00
+//    ...
+//   Extras\t(b 1 lb 0 w 9 nb 1 )\t11\t\t\t\t
+//   Total\t(4 wickets, 20.0 overs )\t173\t\t\t\t
+//   Did not bat: ...
+//   Bowling\tO\tM\tDot\tR\tW\tEcon\t
+//   \tPradhuman Bagadi\t4.0\t0\t13\t30\t1\t7.50\t(1 w1 nb)
+//   ...
+const INNINGS_HEADER_RE = /([^\n\t]+) innings \([^\n)]*\)\tR\tB\t4s\t6s\tSR\n/;
+const BATTING_ROW_RE = /^ (.+?)\t(.+?)\t(\d+)\t(\d+)\t(\d+)\t(\d+)\t([\d.]+)$/gm;
+const BOWLING_HEADER_RE = /Bowling\tO\tM\tDot\tR\tW\tEcon\t?\n/;
+const BOWLING_ROW_RE = /^\t(.+?)\t([\d.]+)\t(\d+)\t(\d+)\t(\d+)\t(\d+)\t([\d.]+)\t?.*$/gm;
+
+function extractSequentialRows(text, fromIndex, rowRe, mapRow) {
+  const rows = [];
+  rowRe.lastIndex = fromIndex;
+  let expectedPos = fromIndex;
+  let m;
+  while ((m = rowRe.exec(text)) !== null) {
+    if (m.index !== expectedPos) break;
+    rows.push(mapRow(m));
+    expectedPos = rowRe.lastIndex + 1;
+  }
+  return rows;
+}
+
+// Parses one innings from the "Full Scorecard" tab view. Returns null if the
+// expected innings header isn't present in the given text.
+function parseInningsScorecard(text) {
+  const header = text.match(INNINGS_HEADER_RE);
+  if (!header) return null;
+
+  const battingTeam = header[1].trim();
+  const battingStart = header.index + header[0].length;
+  const batting = extractSequentialRows(text, battingStart, BATTING_ROW_RE, (m) => ({
+    name: m[1].trim(),
+    dismissal: m[2].trim(),
+    runs: m[3],
+    balls: m[4],
+    fours: m[5],
+    sixes: m[6],
+    sr: m[7]
+  }));
+
+  let bowling = [];
+  const bowlingHeader = text.slice(battingStart).match(BOWLING_HEADER_RE);
+  if (bowlingHeader) {
+    const bowlingStart = battingStart + bowlingHeader.index + bowlingHeader[0].length;
+    bowling = extractSequentialRows(text, bowlingStart, BOWLING_ROW_RE, (m) => ({
+      name: m[1].trim(),
+      overs: m[2],
+      maidens: m[3],
+      dots: m[4],
+      runs: m[5],
+      wkts: m[6],
+      econ: m[7]
+    }));
+  }
+
+  return { battingTeam, batting, bowling };
+}
+
 module.exports = {
-  parseScore
+  parseScore,
+  parseInningsScorecard
 };

@@ -119,6 +119,25 @@ function createApp(options) {
     res.type('text/plain').send(encoded);
   });
 
+  app.get('/debug-photos', (req, res) => {
+    const score = scoreService.getScore();
+
+    function buildPhotoDebug(playerName, photoUrl) {
+      return {
+        playerName: playerName || null,
+        photoUrl: photoUrl || null,
+        source: photoUrl ? 'on-the-fly' : null
+      };
+    }
+
+    res.json({
+      matchUrl: score.matchUrl,
+      lastUpdated: score.lastUpdated,
+      bat1: buildPhotoDebug(score.bat1, score.bat1Photo),
+      bat2: buildPhotoDebug(score.bat2, score.bat2Photo)
+    });
+  });
+
   app.get('/health', (req, res) => {
     const score = scoreService.getScore();
     res.json({
@@ -141,6 +160,10 @@ function createApp(options) {
 
   app.get('/admin', (req, res) => {
     res.sendFile(path.join(staticDir, 'admin.html'));
+  });
+
+  app.get('/fullscorecard', (req, res) => {
+    res.sendFile(path.join(staticDir, 'fullscorecard.html'));
   });
 
   app.use((req, res) => {

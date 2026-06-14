@@ -282,6 +282,185 @@
       letter-spacing: 3px;
     }
 
+    /* ── BATTER SPOTLIGHT ── */
+    #batter-spotlight {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1700;
+      display: none;
+      min-width: 760px;
+      background: linear-gradient(180deg, rgba(21, 32, 56, 0.96) 0%, rgba(14, 24, 40, 0.96) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-top: 2px solid rgba(255, 26, 78, 0.8);
+      border-radius: 20px;
+      padding: 14px 18px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65);
+      opacity: 0;
+    }
+
+    #batter-spotlight.show {
+      display: block;
+      animation: spotlightInOut 6s ease forwards;
+    }
+
+    #batter-spotlight.pinned {
+      display: block;
+      opacity: 1;
+      transform: translate(-50%, -50%);
+      animation: none;
+    }
+
+    @keyframes spotlightInOut {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -54%) scale(0.95);
+      }
+      12% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+      88% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -46%) scale(0.97);
+      }
+    }
+
+    .spotlight-toprow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .spotlight-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      color: rgba(255, 255, 255, 0.96);
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .spotlight-context {
+      background: linear-gradient(180deg, #ff1a4e 0%, #c4002e 100%);
+      color: #fff;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .spotlight-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .spotlight-player {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: linear-gradient(135deg, rgba(24, 36, 68, 0.95) 0%, rgba(37, 61, 101, 0.92) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 12px;
+      padding: 12px;
+      min-height: 92px;
+      position: relative;
+    }
+
+    .spotlight-player::after {
+      content: '';
+      position: absolute;
+      right: 8px;
+      top: 16%;
+      bottom: 16%;
+      width: 2px;
+      background: linear-gradient(180deg, transparent, rgba(255,26,78,0.75), transparent);
+    }
+
+    .spotlight-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ff6b95 0%, #ff2e68 50%, #b40036 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 24px;
+      border: 2px solid rgba(255, 255, 255, 0.42);
+      text-transform: uppercase;
+      flex-shrink: 0;
+      box-shadow: 0 0 14px rgba(255,26,78,0.35);
+    }
+
+    .spotlight-meta {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .spotlight-name-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .spotlight-name {
+      color: #fff;
+      font-size: 22px;
+      font-family: 'Barlow Condensed', sans-serif;
+      letter-spacing: 0.8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .strike-pill {
+      display: none;
+      background: rgba(255, 26, 78, 0.2);
+      color: #ff6b95;
+      border: 1px solid rgba(255, 26, 78, 0.7);
+      border-radius: 999px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      flex-shrink: 0;
+    }
+
+    .spotlight-score {
+      color: rgba(255, 26, 78, 0.98);
+      font-size: 20px;
+      font-family: 'Barlow Condensed', sans-serif;
+      letter-spacing: 0.8px;
+    }
+
+    .spotlight-partnership {
+      margin-top: 10px;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.9);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 18px;
+      letter-spacing: 0.9px;
+    }
+
 
   </style>
 </head>
@@ -354,13 +533,167 @@
     <div class="boundary-text">🔥 FOUR/SIX 🔥</div>
   </div>
 
+  <!-- Batter Spotlight -->
+  <div id="batter-spotlight">
+    <div class="spotlight-toprow">
+      <div class="spotlight-title">CURRENT BATTING PAIR</div>
+      <div class="spotlight-context" id="spotlight-context">1ST INNINGS</div>
+    </div>
+    <div class="spotlight-grid">
+      <div class="spotlight-player" id="spotlight-player-1">
+        <div class="spotlight-avatar" id="spotlight-p1-avatar">--</div>
+        <div class="spotlight-meta">
+          <div class="spotlight-name-row">
+            <div class="spotlight-name" id="spotlight-p1-name">Batter 1</div>
+            <span class="strike-pill" id="spotlight-p1-strike">ON STRIKE</span>
+          </div>
+          <div class="spotlight-score" id="spotlight-p1-score">- (-)</div>
+        </div>
+      </div>
+      <div class="spotlight-player" id="spotlight-player-2">
+        <div class="spotlight-avatar" id="spotlight-p2-avatar">--</div>
+        <div class="spotlight-meta">
+          <div class="spotlight-name-row">
+            <div class="spotlight-name" id="spotlight-p2-name">Batter 2</div>
+            <span class="strike-pill" id="spotlight-p2-strike">ON STRIKE</span>
+          </div>
+          <div class="spotlight-score" id="spotlight-p2-score">- (-)</div>
+        </div>
+      </div>
+    </div>
+    <div class="spotlight-partnership" id="spotlight-partnership">Partnership: -</div>
+  </div>
+
 
 
   <script>
+    const query = new URLSearchParams(window.location.search);
+    const isSpotlightDemoMode = query.get('demoSpotlight') === '1';
+    const isSpotlightPinned = query.get('spotlightAlways') === '1';
+
     let prevState = {};
     let hasBaselineState = false;
     let fullcardTimeout = null;
     let prevOverCount = 0;
+    let prevThisOverLength = 0;
+    let spotlightTimeout = null;
+
+    function getInitials(name) {
+      const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+      if (parts.length === 0) return '--';
+      if (parts.length === 1) return parts[0].slice(0, 2);
+      return `${parts[0][0]}${parts[parts.length - 1][0]}`;
+    }
+
+    function formatBatterScore(runs, balls) {
+      const r = runs !== null && runs !== undefined && runs !== '' ? runs : '-';
+      const b = balls !== null && balls !== undefined && balls !== '' ? balls : '-';
+      return `${r} (${b})`;
+    }
+
+    function formatRate(value) {
+      const numeric = Number(value);
+      return Number.isFinite(numeric) ? numeric.toFixed(2) : '-';
+    }
+
+    function toInt(value) {
+      const parsed = Number.parseInt(value, 10);
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
+
+    function getInningsContext(score) {
+      if (score.runsNeeded || score.ballsLeft) return 'CHASING';
+      if (score.score2 || score.overs2) return '2ND INNINGS';
+      return '1ST INNINGS';
+    }
+
+    function getPartnershipText(score) {
+      const runs = toInt(score.bat1r) + toInt(score.bat2r);
+      const balls = toInt(score.bat1b) + toInt(score.bat2b);
+      if (runs === 0 && balls === 0) {
+        return 'Partnership: -';
+      }
+      return `Partnership: ${runs} (${balls})`;
+    }
+
+    function setSpotlightAvatar(avatarId, batterName, photoUrl) {
+      const avatar = document.getElementById(avatarId);
+      const initials = getInitials(batterName);
+
+      avatar.textContent = initials;
+      avatar.style.backgroundImage = '';
+      avatar.style.background = 'radial-gradient(circle at 30% 30%, #ff6b95 0%, #ff2e68 50%, #b40036 100%)';
+      avatar.style.backgroundSize = '';
+      avatar.style.backgroundPosition = '';
+      avatar.style.color = '#fff';
+
+      if (!photoUrl) return;
+
+      const probe = new Image();
+      probe.onload = () => {
+        avatar.textContent = '';
+        avatar.style.background = '';
+        avatar.style.backgroundImage = `url("${photoUrl}")`;
+        avatar.style.backgroundSize = 'cover';
+        avatar.style.backgroundPosition = 'center';
+      };
+      probe.onerror = () => {
+        // Keep initials fallback if remote image URL fails.
+      };
+      probe.src = photoUrl;
+    }
+
+    function showBatterSpotlight(currentScore) {
+      if (!currentScore.bat1) return;
+
+      const container = document.getElementById('batter-spotlight');
+      const p2Card = document.getElementById('spotlight-player-2');
+
+      document.getElementById('spotlight-p1-name').textContent = currentScore.bat1;
+      document.getElementById('spotlight-p1-score').textContent = formatBatterScore(currentScore.bat1r, currentScore.bat1b);
+      setSpotlightAvatar('spotlight-p1-avatar', currentScore.bat1, currentScore.bat1Photo);
+      document.getElementById('spotlight-p1-strike').style.display = 'inline-flex';
+      document.getElementById('spotlight-p2-strike').style.display = 'none';
+
+      if (currentScore.bat2) {
+        p2Card.style.display = 'flex';
+        document.getElementById('spotlight-p2-name').textContent = currentScore.bat2;
+        document.getElementById('spotlight-p2-score').textContent = formatBatterScore(currentScore.bat2r, currentScore.bat2b);
+        setSpotlightAvatar('spotlight-p2-avatar', currentScore.bat2, currentScore.bat2Photo);
+      } else {
+        p2Card.style.display = 'none';
+      }
+
+      document.getElementById('spotlight-context').textContent = getInningsContext(currentScore);
+      document.getElementById('spotlight-partnership').textContent = getPartnershipText(currentScore);
+
+      clearTimeout(spotlightTimeout);
+
+      if (isSpotlightPinned) {
+        container.classList.remove('show');
+        container.classList.add('pinned');
+      } else {
+        container.classList.remove('pinned');
+        container.classList.remove('show');
+        void container.offsetWidth;
+        container.classList.add('show');
+        spotlightTimeout = setTimeout(() => {
+          container.classList.remove('show');
+        }, 6000);
+      }
+    }
+
+    function checkOverCompletionAndShowBatters(currentScore) {
+      const currentThisOverLength = Array.isArray(currentScore.thisOver)
+        ? currentScore.thisOver.length
+        : 0;
+
+      if (prevThisOverLength >= 5 && currentThisOverLength <= 1) {
+        showBatterSpotlight(currentScore);
+      }
+
+      prevThisOverLength = currentThisOverLength;
+    }
 
     // Fetch score data
     async function fetchScore() {
@@ -396,13 +729,13 @@
       document.getElementById('fullcard-score1').textContent = score.score1 || '-';
       document.getElementById('fullcard-wkts1').textContent = score.wkts1 || '-';
       document.getElementById('fullcard-overs1').textContent = score.overs1 || '-';
-      document.getElementById('fullcard-crr1').textContent = score.crr ? score.crr.toFixed(2) : '-';
+      document.getElementById('fullcard-crr1').textContent = formatRate(score.crr);
 
       document.getElementById('fullcard-team2').textContent = score.team2 || 'Team 2';
       document.getElementById('fullcard-score2').textContent = score.score2 || '-';
       document.getElementById('fullcard-wkts2').textContent = score.wkts2 || '-';
       document.getElementById('fullcard-overs2').textContent = score.overs2 || '-';
-      document.getElementById('fullcard-crr2').textContent = score.rrr ? score.rrr.toFixed(2) : '-';
+      document.getElementById('fullcard-crr2').textContent = formatRate(score.rrr);
 
       // Show fullcard
       const container = document.getElementById('fullcard-container');
@@ -544,7 +877,11 @@
 
       if (!hasBaselineState) {
         prevState = JSON.parse(JSON.stringify(currentScore));
+        prevThisOverLength = Array.isArray(currentScore.thisOver) ? currentScore.thisOver.length : 0;
         hasBaselineState = true;
+        if (isSpotlightPinned) {
+          showBatterSpotlight(currentScore);
+        }
         return;
       }
 
@@ -553,14 +890,33 @@
       checkDuck(currentScore);
       checkBoundary(currentScore);
       checkWicket(currentScore);
+      checkOverCompletionAndShowBatters(currentScore);
+      if (isSpotlightPinned) {
+        showBatterSpotlight(currentScore);
+      }
 
       // Update state
       prevState = JSON.parse(JSON.stringify(currentScore));
     }
 
+    function runSpotlightDemo() {
+      showBatterSpotlight({
+        bat1: 'Virat Kohli',
+        bat1r: '57',
+        bat1b: '34',
+        bat2: 'Rohit Sharma',
+        bat2r: '41',
+        bat2b: '28'
+      });
+    }
+
     // Poll for updates every 5 seconds
     setInterval(updateOverlay, 5000);
     updateOverlay();
+
+    if (isSpotlightDemoMode) {
+      setTimeout(runSpotlightDemo, 1200);
+    }
   </script>
 </body>
 </html>

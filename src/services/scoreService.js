@@ -37,6 +37,8 @@ class ScoreService {
     this.lastInternalError = null;
     this.prevThisOverLength = 0;  // Track previous over's ball count
     this.postOverTimeoutId = null;  // Track timeout for reverting to normal interval
+    this.matchOverTimeoutId = null;  // Track timeout for stopping scraping after match ends
+    this.matchOverStopDelayMs = options.matchOverStopDelayMs || 5 * 60 * 1000;
   }
 
   getScore() {
@@ -162,6 +164,19 @@ class ScoreService {
       matchUrl
     };
     this.lastInternalError = null;
+
+    // Match finished: stop scraping after a grace period so the final score stays visible.
+    const isMatchOver = Boolean(this.scoreCache.status && /\bwon by\b/i.test(this.scoreCache.status));
+    if (isMatchOver) {
+      if (!this.matchOverTimeoutId) {
+        this.matchOverTimeoutId = setTimeout(() => {
+          this.stop();
+        }, this.matchOverStopDelayMs);
+      }
+    } else if (this.matchOverTimeoutId) {
+      clearTimeout(this.matchOverTimeoutId);
+      this.matchOverTimeoutId = null;
+    }
   }
 
   stop() {
@@ -172,6 +187,10 @@ class ScoreService {
     if (this.postOverTimeoutId) {
       clearTimeout(this.postOverTimeoutId);
       this.postOverTimeoutId = null;
+    }
+    if (this.matchOverTimeoutId) {
+      clearTimeout(this.matchOverTimeoutId);
+      this.matchOverTimeoutId = null;
     }
   }
 

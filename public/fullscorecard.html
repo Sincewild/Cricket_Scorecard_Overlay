@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920, initial-scale=1.0">
+<title>Cricket Full Scorecard Overlay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Barlow+Condensed:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { background: transparent; }
+
+  body {
+    background: transparent;
+    font-family: 'Rajdhani', 'Segoe UI', Arial, sans-serif;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  #scorecard {
+    position: fixed;
+    top: 40px;
+    left: 40px;
+    right: 40px;
+    display: flex;
+    gap: 20px;
+    filter: drop-shadow(0 6px 32px rgba(0,0,0,0.75));
+  }
+
+  .innings-panel {
+    flex: 1;
+    background: linear-gradient(180deg, #152038 0%, #0e1828 100%);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-top: 2px solid rgba(255, 200, 60, 0.55);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .innings-header {
+    background: linear-gradient(135deg, #182444 0%, #253d65 60%, #1a2d50 100%);
+    color: #fff;
+    padding: 8px 14px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(255,200,60,0.3);
+  }
+
+  .innings-header .vs {
+    color: rgba(255,200,60,0.85);
+    font-weight: 600;
+    margin-left: 6px;
+  }
+
+  .section-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 9px;
+    color: rgba(255,200,60,0.6);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+    padding: 8px 14px 4px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  th {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 9px;
+    color: rgba(255,200,60,0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    text-align: left;
+    padding: 2px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+
+  th.num, td.num { text-align: right; padding-right: 14px; }
+
+  td {
+    color: #d8e0ee;
+    font-weight: 600;
+    padding: 3px 14px;
+    letter-spacing: 0.3px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  td.name {
+    font-family: 'Rajdhani', sans-serif;
+    color: #fff;
+  }
+
+  td.stat {
+    font-family: 'Barlow Condensed', sans-serif;
+    color: #7eb8f7;
+  }
+
+  .empty-row td {
+    color: #445566;
+    font-style: italic;
+    text-align: center;
+  }
+
+  td.dismissal {
+    font-family: 'Rajdhani', sans-serif;
+    color: #7a8aa0;
+    font-size: 11px;
+  }
+</style>
+</head>
+<body>
+
+<!-- 1px anchor prevents YOLOBox from treating the page as blank and auto-hiding -->
+<div style="position:fixed;top:0;left:0;width:1px;height:1px;background:#010101;opacity:0.01;pointer-events:none;"></div>
+
+<div id="scorecard"></div>
+
+<script>
+  const SERVER_URL = window.location.origin;
+  const REFRESH_EVERY = 20;
+
+  function buildTable(rows, columns) {
+    const head = `<tr>${columns.map(c => `<th${c.num ? ' class="num"' : ''}>${c.label}</th>`).join('')}</tr>`;
+    let body;
+    if (!rows || rows.length === 0) {
+      body = `<tr class="empty-row"><td colspan="${columns.length}">No data yet</td></tr>`;
+    } else {
+      body = rows.map(row => `<tr>${columns.map((c, i) => {
+        const cls = c.cls || (i === 0 ? 'name' : (c.num ? 'num stat' : 'stat'));
+        return `<td class="${cls}">${row[c.key] ?? '—'}</td>`;
+      }).join('')}</tr>`).join('');
+    }
+    return `<table><thead>${head}</thead><tbody>${body}</tbody></table>`;
+  }
+
+  function buildInnings(innings, fallbackBattingTeam, fallbackBowlingTeam) {
+    if (!innings) {
+      innings = { battingTeam: fallbackBattingTeam, batting: [], bowlingTeam: fallbackBowlingTeam, bowling: [] };
+    }
+
+    const battingCols = [
+      { key: 'name', label: 'Batter' },
+      { key: 'dismissal', label: '', cls: 'dismissal' },
+      { key: 'runs', label: 'R', num: true },
+      { key: 'balls', label: 'B', num: true },
+      { key: 'fours', label: '4s', num: true },
+      { key: 'sixes', label: '6s', num: true },
+      { key: 'sr', label: 'SR', num: true }
+    ];
+
+    const bowlingCols = [
+      { key: 'name', label: 'Bowler' },
+      { key: 'overs', label: 'O', num: true },
+      { key: 'maidens', label: 'M', num: true },
+      { key: 'dots', label: 'Dot', num: true },
+      { key: 'runs', label: 'R', num: true },
+      { key: 'wkts', label: 'W', num: true },
+      { key: 'econ', label: 'Econ', num: true }
+    ];
+
+    return `
+      <div class="innings-panel">
+        <div class="innings-header">${innings.battingTeam || fallbackBattingTeam || 'Team'} <span class="vs">batting</span></div>
+        ${buildTable(innings.batting, battingCols)}
+        <div class="section-label">Bowling — ${innings.bowlingTeam || fallbackBowlingTeam || 'Team'}</div>
+        ${buildTable(innings.bowling, bowlingCols)}
+      </div>
+    `;
+  }
+
+  function updateUI(data) {
+    const sc = data.scorecard || {};
+    const container = document.getElementById('scorecard');
+    container.innerHTML =
+      buildInnings(sc.innings1, data.team1, data.team2) +
+      buildInnings(sc.innings2, data.team2, data.team1);
+  }
+
+  async function fetchScore() {
+    try {
+      const resp = await fetch(`${SERVER_URL}/score`, { cache: 'no-store' });
+      if (!resp.ok) throw new Error(`Server error ${resp.status}`);
+      const data = await resp.json();
+      updateUI(data);
+    } catch (e) {
+      console.warn('Fetch error:', e.message);
+    }
+  }
+
+  setInterval(fetchScore, REFRESH_EVERY * 1000);
+  fetchScore();
+</script>
+</body>
+</html>
